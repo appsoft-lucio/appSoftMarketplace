@@ -1,7 +1,11 @@
+import { useState } from "react";
 import Button from "../components/Button";
 import "./AuthPages.css";
 
 function RegisterPage({ onNavigate }) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   return (
     <div className="auth-page">
       <div className="auth-card">
@@ -21,17 +25,48 @@ function RegisterPage({ onNavigate }) {
         <form className="auth-form">
           <label className="field-group">
             <span>Nome completo</span>
-            <input type="text" placeholder="Seu nome" />
+            <input type="text" value="Maria Silva" readOnly />
           </label>
 
           <label className="field-group">
             <span>E-mail</span>
-            <input type="email" placeholder="seu@email.com" />
+            <input type="email" value="maria@appsoft.com" readOnly />
           </label>
 
           <label className="field-group">
             <span>Senha</span>
-            <input type="password" placeholder="Crie uma senha" />
+            <div className="password-wrap">
+              <input
+                type={showPassword ? "text" : "password"}
+                value="123456"
+                readOnly
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowPassword((value) => !value)}
+              >
+                {showPassword ? "Ocultar" : "Mostrar"}
+              </button>
+            </div>
+          </label>
+
+          <label className="field-group">
+            <span>Confirmar senha</span>
+            <div className="password-wrap">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                value="123456"
+                readOnly
+              />
+              <button
+                type="button"
+                className="toggle-password"
+                onClick={() => setShowConfirmPassword((value) => !value)}
+              >
+                {showConfirmPassword ? "Ocultar" : "Mostrar"}
+              </button>
+            </div>
           </label>
 
           <Button
