@@ -5,6 +5,8 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import CartPage from "./pages/CartPage";
+import UserProfilePage from "./pages/UserProfilePage";
+import VendorPage from "./pages/VendorPage";
 
 const initialCart = [
   {
@@ -78,6 +80,14 @@ function App() {
         onRemoveItem={removeItem}
       />
     );
+  }
+
+  if (screen === "profile") {
+    return <UserProfilePage onNavigate={setScreen} />;
+  }
+
+  if (screen === "vendor") {
+    return <VendorPage onNavigate={setScreen} />;
   }
 
   return (

@@ -2,7 +2,12 @@ import Button from "./Button";
 import logo from "../assets/logo-appsoft-orange-semFundo.png";
 
 function Header({ onNavigate, cartCount = 0 }) {
-  const navItems = ["Início", "Categorias", "Ofertas", "Vendedores"];
+  const navItems = [
+    { label: "Início", screen: "home" },
+    { label: "Categorias", screen: "home" },
+    { label: "Ofertas", screen: "home" },
+    { label: "Vendedores", screen: "vendor" },
+  ];
 
   return (
     <header className="topbar">
@@ -27,19 +32,19 @@ function Header({ onNavigate, cartCount = 0 }) {
       <nav className="menu" aria-label="Menu principal">
         {navItems.map((item) => (
           <button
-            key={item}
+            key={item.label}
             type="button"
             className="menu-link menu-button"
-            onClick={() => onNavigate("home")}
+            onClick={() => onNavigate(item.screen)}
           >
-            {item}
+            {item.label}
           </button>
         ))}
       </nav>
 
       <div className="actions">
-        <Button variant="light" onClick={() => onNavigate("login")}>
-          Entrar
+        <Button variant="light" onClick={() => onNavigate("profile")}>
+          Meu perfil
         </Button>
         <Button variant="primary" onClick={() => onNavigate("cart")}>
           Carrinho ({cartCount})
