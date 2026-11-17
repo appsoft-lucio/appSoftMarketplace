@@ -75,9 +75,41 @@ const produtos = [
   },
 ];
 
+const lojas = [
+  {
+    id: 1,
+    nome: "TechNova",
+    categoria: "Eletrônicos",
+    destaque: "A melhor seleção em tecnologia",
+    cor: "azul",
+  },
+  {
+    id: 2,
+    nome: "HomeStyle",
+    categoria: "Casa",
+    destaque: "Design e conforto para sua casa",
+    cor: "laranja",
+  },
+  {
+    id: 3,
+    nome: "SportLife",
+    categoria: "Esportes",
+    destaque: "Performance para viver ativo",
+    cor: "verde",
+  },
+  {
+    id: 4,
+    nome: "Fashion Hub",
+    categoria: "Moda",
+    destaque: "Estilo que acompanha você",
+    cor: "roxo",
+  },
+];
+
 function HomePage({ onNavigate, cartCount, onAddToCart }) {
   const [slideAtivo, setSlideAtivo] = useState(0);
   const [indiceProdutos, setIndiceProdutos] = useState(0);
+  const [indiceLojas, setIndiceLojas] = useState(0);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -95,9 +127,20 @@ function HomePage({ onNavigate, cartCount, onAddToCart }) {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndiceLojas((atual) => (atual + 1) % lojas.length);
+    }, 4500);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const ofertaAtual = ofertas[slideAtivo];
   const produtosVisiveis = Array.from({ length: 4 }, (_, index) => {
     return produtos[(indiceProdutos + index) % produtos.length];
+  });
+  const lojasVisiveis = Array.from({ length: 4 }, (_, index) => {
+    return lojas[(indiceLojas + index) % lojas.length];
   });
 
   return (
@@ -231,6 +274,54 @@ function HomePage({ onNavigate, cartCount, onAddToCart }) {
                 produto={produto}
                 onAddToCart={onAddToCart}
               />
+            ))}
+          </div>
+        </section>
+
+        <section className="stores">
+          <div className="section-title">
+            <h2>Lojas em destaque</h2>
+
+            <div className="products-actions">
+              <button
+                type="button"
+                className="carousel-btn"
+                aria-label="Loja anterior"
+                onClick={() =>
+                  setIndiceLojas(
+                    (atual) => (atual - 1 + lojas.length) % lojas.length,
+                  )
+                }
+              >
+                ←
+              </button>
+
+              <button
+                type="button"
+                className="carousel-btn"
+                aria-label="Próxima loja"
+                onClick={() => setIndiceLojas((atual) => (atual + 1) % lojas.length)}
+              >
+                →
+              </button>
+            </div>
+          </div>
+
+          <div className="store-grid">
+            {lojasVisiveis.map((loja) => (
+              <article key={loja.id} className="store-card">
+                <div className={`store-cover ${loja.cor}`}>
+                  <span>{loja.categoria}</span>
+                </div>
+
+                <div className="store-body">
+                  <h3>{loja.nome}</h3>
+                  <p>{loja.destaque}</p>
+                  <button type="button" className="btn btn-dark store-button">
+                    Ver loja
+                  </button>
+                </div>
+              </article>
             ))}
           </div>
         </section>
