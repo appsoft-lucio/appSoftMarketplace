@@ -17,6 +17,13 @@
   margin-bottom: 24px;
 }
 
+.profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
 .back-link {
   border: none;
   background: transparent;

@@ -46,6 +46,9 @@ function Header({ onNavigate, cartCount = 0 }) {
         <Button variant="light" onClick={() => onNavigate("profile")}>
           Meu perfil
         </Button>
+        <Button variant="light" onClick={() => onNavigate("login")}>
+          Sair
+        </Button>
         <Button variant="primary" onClick={() => onNavigate("cart")}>
           Carrinho ({cartCount})
         </Button>

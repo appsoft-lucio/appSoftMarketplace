@@ -42,9 +42,14 @@ function UserProfilePage({ onNavigate }) {
             ← Voltar
           </button>
 
-          <Button variant="primary" onClick={() => onNavigate("home")}>
-            Explorar loja
-          </Button>
+          <div className="profile-actions">
+            <Button variant="primary" onClick={() => onNavigate("home")}>
+              Explorar loja
+            </Button>
+            <Button variant="light" onClick={() => onNavigate("login")}>
+              Sair
+            </Button>
+          </div>
         </header>
 
         <div className="profile-layout">
