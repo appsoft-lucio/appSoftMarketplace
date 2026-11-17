@@ -75,7 +75,7 @@ const produtos = [
   },
 ];
 
-function HomePage() {
+function HomePage({ onNavigate, cartCount, onAddToCart }) {
   const [slideAtivo, setSlideAtivo] = useState(0);
   const [indiceProdutos, setIndiceProdutos] = useState(0);
 
@@ -102,7 +102,7 @@ function HomePage() {
 
   return (
     <div className="marketplace">
-      <Header />
+      <Header onNavigate={onNavigate} cartCount={cartCount} />
 
       <main className="container">
         <section className="hero">
@@ -115,8 +115,12 @@ function HomePage() {
             </p>
 
             <div className="hero-actions">
-              <Button variant="primary">Comprar agora</Button>
-              <Button variant="light">Ver ofertas</Button>
+              <Button variant="primary" onClick={() => onNavigate("cart")}>
+                Comprar agora
+              </Button>
+              <Button variant="light" onClick={() => onNavigate("home")}>
+                Ver ofertas
+              </Button>
             </div>
 
             <div className="stats">
@@ -225,6 +229,7 @@ function HomePage() {
               <ProductCard
                 key={`${produto.id}-${produto.nome}`}
                 produto={produto}
+                onAddToCart={onAddToCart}
               />
             ))}
           </div>

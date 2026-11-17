@@ -24,6 +24,13 @@
   justify-content: center;
 }
 
+.brand-button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
 .logo {
   display: flex;
   align-items: center;
@@ -49,6 +56,14 @@
 
 .menu-link {
   transition: color 0.2s ease;
+}
+
+.menu-button {
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
 }
 
 .menu-link:hover {
