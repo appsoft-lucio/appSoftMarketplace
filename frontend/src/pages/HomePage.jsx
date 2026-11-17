@@ -106,6 +106,41 @@ const lojas = [
   },
 ];
 
+const marcasParceiras = [
+  "Samsung",
+  "Apple",
+  "Nike",
+  "Adidas",
+  "Sony",
+  "Xiaomi",
+  "Intel",
+  "Amazon",
+];
+
+const avaliacoes = [
+  {
+    id: 1,
+    nome: "Ana M.",
+    produto: "AirPods Pro",
+    texto: "Entrega rápida, produto impecável e atendimento muito ágil.",
+    nota: 5,
+  },
+  {
+    id: 2,
+    nome: "Carlos S.",
+    produto: "Cafeteira Deluxe",
+    texto: "A loja entregou exatamente o que prometeu. Ótima qualidade!",
+    nota: 5,
+  },
+  {
+    id: 3,
+    nome: "Paula R.",
+    produto: "Tênis Runner",
+    texto: "Compra simples, preço justo e a experiência foi muito boa.",
+    nota: 4,
+  },
+];
+
 function HomePage({ onNavigate, cartCount, onAddToCart }) {
   const [slideAtivo, setSlideAtivo] = useState(0);
   const [indiceProdutos, setIndiceProdutos] = useState(0);
@@ -300,7 +335,9 @@ function HomePage({ onNavigate, cartCount, onAddToCart }) {
                 type="button"
                 className="carousel-btn"
                 aria-label="Próxima loja"
-                onClick={() => setIndiceLojas((atual) => (atual + 1) % lojas.length)}
+                onClick={() =>
+                  setIndiceLojas((atual) => (atual + 1) % lojas.length)
+                }
               >
                 →
               </button>
@@ -321,6 +358,47 @@ function HomePage({ onNavigate, cartCount, onAddToCart }) {
                     Ver loja
                   </button>
                 </div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="brands-section">
+          <div className="section-title">
+            <h2>Marcas parceiras</h2>
+          </div>
+
+          <div className="brands-strip">
+            {marcasParceiras.map((marca) => (
+              <div key={marca} className="brand-pill">
+                {marca}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="reviews-section">
+          <div className="section-title">
+            <h2>Avaliações</h2>
+          </div>
+
+          <div className="reviews-grid">
+            {avaliacoes.map((avaliacao) => (
+              <article key={avaliacao.id} className="review-card">
+                <div className="review-header">
+                  <div>
+                    <h3>{avaliacao.nome}</h3>
+                    <span>{avaliacao.produto}</span>
+                  </div>
+                  <div
+                    className="stars"
+                    aria-label={`${avaliacao.nota} estrelas`}
+                  >
+                    {"★".repeat(avaliacao.nota)}
+                  </div>
+                </div>
+
+                <p>{avaliacao.texto}</p>
               </article>
             ))}
           </div>

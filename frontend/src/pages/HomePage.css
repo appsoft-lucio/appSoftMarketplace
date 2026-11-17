@@ -332,6 +332,73 @@
   gap: 22px;
 }
 
+.brands-section,
+.reviews-section {
+  margin-top: 28px;
+}
+
+.brands-strip {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.brand-pill {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px 12px;
+  text-align: center;
+  font-weight: 800;
+  color: var(--bg-dark);
+  box-shadow: 0 10px 18px rgba(17, 24, 39, 0.03);
+}
+
+.reviews-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.review-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: 0 15px 30px rgba(17, 24, 39, 0.04);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.review-header h3 {
+  margin: 0 0 4px;
+  font-size: 1.2rem;
+  color: var(--bg-dark);
+}
+
+.review-header span {
+  color: var(--gray);
+  font-size: 0.88rem;
+}
+
+.stars {
+  color: #f59e0b;
+  letter-spacing: 1px;
+  font-size: 1.05rem;
+}
+
+.review-card p {
+  margin: 0;
+  line-height: 1.7;
+  color: var(--gray);
+}
+
 .product-card {
   background: var(--white);
   border-radius: 24px;
@@ -484,8 +551,14 @@
   }
 
   .category-grid,
-  .product-grid {
+  .product-grid,
+  .store-grid,
+  .reviews-grid {
     grid-template-columns: 1fr;
+  }
+
+  .brands-strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .hero-text {
