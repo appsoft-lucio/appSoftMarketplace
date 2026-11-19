@@ -27,7 +27,13 @@ function VendorPage({ onNavigate }) {
           </button>
 
           <div className="profile-actions">
-            <Button variant="primary" onClick={() => onNavigate("home")}>
+            <Button
+              variant="primary"
+              onClick={() => onNavigate("vendor-dashboard")}
+            >
+              Dashboard
+            </Button>
+            <Button variant="light" onClick={() => onNavigate("home")}>
               Ver catálogo
             </Button>
             <Button variant="light" onClick={() => onNavigate("login")}>

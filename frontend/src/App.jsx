@@ -7,6 +7,7 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import CartPage from "./pages/CartPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import VendorPage from "./pages/VendorPage";
+import VendorDashboardPage from "./pages/VendorDashboardPage";
 
 const initialCart = [
   {
@@ -88,6 +89,10 @@ function App() {
 
   if (screen === "vendor") {
     return <VendorPage onNavigate={setScreen} />;
+  }
+
+  if (screen === "vendor-dashboard") {
+    return <VendorDashboardPage onNavigate={setScreen} />;
   }
 
   return (
