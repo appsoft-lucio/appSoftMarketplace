@@ -8,7 +8,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.svg", "icon-192.png", "icon-512.png"],
+      includeAssets: ["favicon.svg", "marketplace-icon.svg", "icon-192.png", "icon-512.png"],
       manifest: {
         name: "AppSoft Marketplace",
         short_name: "AppSoft",
