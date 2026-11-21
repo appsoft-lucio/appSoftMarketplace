@@ -1,14 +1,21 @@
 {
-  "devDependencies": {
-    "@tailwindcss/vite": "^4.3.5",
-    "tailwindcss": "^4.3.5"
-  },
+  "name": "appsoft-marketplace",
+  "private": true,
+  "version": "0.1.0",
   "type": "module",
+  "engines": { "node": ">=22.13.0 <23" },
+  "workspaces": ["apps/*", "packages/*"],
   "scripts": {
-    "build": "npm --prefix frontend run build",
-    "test": "npm --prefix backend test"
+    "dev": "npm run dev --workspace @appsoft/web",
+    "dev:api": "npm run dev --workspace @appsoft/api",
+    "build": "npm run typecheck && npm run build --workspace @appsoft/web",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test packages/domain/test/*.test.ts apps/api/test/*.test.ts database/test/*.test.ts"
   },
-  "engines": {
-    "node": "22.x"
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.17",
+    "@types/node": "^22.0.0",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2"
   }
 }
