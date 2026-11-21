@@ -1,138 +1,128 @@
-import db from "../database.js";
+import db, { tables, transaction } from "../database.js";
 
-const statements = {
-  findCart: db.prepare(`
-    SELECT ci.product_id, ci.quantity, p.name, p.price, p.stock,
-           p.active, p.vendor_id
-    FROM cart_items ci
-    JOIN products p ON p.id = ci.product_id
-    WHERE ci.user_id = ?
-  `),
-  insertOrder: db.prepare(`
-    INSERT INTO orders (customer_id, subtotal, shipping, total, status)
-    VALUES (?, ?, 25, ?, 'processando')
-  `),
-  insertItem: db.prepare(`
-    INSERT INTO order_items
-      (order_id, product_id, vendor_id, product_name, unit_price, quantity, subtotal)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `),
-  decreaseStock: db.prepare(`
-    UPDATE products
-    SET stock = stock - ?
-    WHERE id = ? AND stock >= ? AND active = 1
-  `),
-  clearCart: db.prepare(`DELETE FROM cart_items WHERE user_id = ?`),
-  findById: db.prepare(`SELECT * FROM orders WHERE id = ?`),
-  findItems: db.prepare(`
-    SELECT * FROM order_items WHERE order_id = ? ORDER BY id
-  `),
-  findByCustomer: db.prepare(`
-    SELECT * FROM orders WHERE customer_id = ? ORDER BY created_at DESC
-  `),
-  findByVendor: db.prepare(`
-    SELECT DISTINCT o.*
-    FROM orders o
-    JOIN order_items oi ON oi.order_id = o.id
-    WHERE oi.vendor_id = ?
-    ORDER BY o.created_at DESC
-  `),
-  updateStatus: db.prepare(`
-    UPDATE orders
-    SET status = ?, updated_at = CURRENT_TIMESTAMP
-    WHERE id = ?
-  `),
-};
+async function withItems(order, client = db, vendorId) {
+  const { rows: items } = await client.query(
+    `SELECT * FROM ${tables.order_items} WHERE order_id = $1 ORDER BY id`,
+    [order.id],
+  );
+  return {
+    ...order,
+    items:
+      vendorId === undefined
+        ? items
+        : items.filter((item) => item.vendor_id === vendorId),
+  };
+}
 
 export const orderRepository = {
-  createTransaction(customerId) {
-    return db.transaction(() => {
-      const cart = statements.findCart.all(customerId);
-      if (cart.length === 0) {
-        throw { status: 400, message: "O carrinho está vazio." };
-      }
-
+  async createTransaction(customerId) {
+    return transaction(async (client) => {
+      // Serialize checkout and cart mutations for the same customer.
+      await client.query(
+        `SELECT id FROM ${tables.users} WHERE id = $1 FOR UPDATE`,
+        [customerId],
+      );
+      // Lock products in a stable order so different buyers cannot oversell stock.
+      const { rows: cart } = await client.query(
+        `
+        SELECT ci.product_id, ci.quantity, p.name, p.price, p.stock, p.active, p.vendor_id
+        FROM ${tables.cart_items} ci JOIN ${tables.products} p ON p.id = ci.product_id
+        WHERE ci.user_id = $1 ORDER BY p.id FOR UPDATE OF p, ci
+      `,
+        [customerId],
+      );
+      if (!cart.length)
+        throw { status: 400, message: "O carrinho esta vazio." };
       for (const item of cart) {
-        if (!item.active) {
-          throw { status: 400, message: `Produto indisponível: ${item.name}` };
-        }
-        if (item.quantity > item.stock) {
+        if (!item.active)
+          throw { status: 400, message: `Produto indisponivel: ${item.name}` };
+        if (item.quantity > item.stock)
           throw {
             status: 400,
             message: `Estoque insuficiente para: ${item.name}`,
           };
-        }
       }
-
-      const subtotal = cart.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0,
+      const subtotal = Number(
+        cart
+          .reduce((total, item) => total + item.price * item.quantity, 0)
+          .toFixed(2),
       );
-      const orderResult = statements.insertOrder.run(
-        customerId,
-        subtotal,
-        subtotal + 25,
+      const {
+        rows: [order],
+      } = await client.query(
+        `INSERT INTO ${tables.orders} (customer_id, subtotal, shipping, total, status) VALUES ($1, $2, 25, $3, 'processando') RETURNING *`,
+        [customerId, subtotal, subtotal + 25],
       );
-      const orderId = orderResult.lastInsertRowid;
-
       for (const item of cart) {
-        statements.insertItem.run(
-          orderId,
-          item.product_id,
-          item.vendor_id,
-          item.name,
-          item.price,
-          item.quantity,
-          item.price * item.quantity,
+        await client.query(
+          `INSERT INTO ${tables.order_items} (order_id, product_id, vendor_id, product_name, unit_price, quantity, subtotal) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          [
+            order.id,
+            item.product_id,
+            item.vendor_id,
+            item.name,
+            item.price,
+            item.quantity,
+            item.price * item.quantity,
+          ],
         );
-
-        statements.decreaseStock.run(
-          item.quantity,
-          item.product_id,
-          item.quantity,
+        const result = await client.query(
+          `UPDATE ${tables.products} SET stock = stock - $1 WHERE id = $2 AND stock >= $1 AND active = 1`,
+          [item.quantity, item.product_id],
         );
+        if (result.rowCount !== 1)
+          throw {
+            status: 400,
+            message: `Estoque insuficiente para: ${item.name}`,
+          };
       }
-
-      statements.clearCart.run(customerId);
-      return this.getWithItems(orderId);
-    })();
+      await client.query(
+        `DELETE FROM ${tables.cart_items} WHERE user_id = $1`,
+        [customerId],
+      );
+      return withItems(order, client);
+    });
   },
-
-  getWithItems(orderId) {
-    const order = statements.findById.get(orderId);
-    if (!order) return null;
-    return { ...order, items: statements.findItems.all(orderId) };
+  async getWithItems(orderId) {
+    const {
+      rows: [order],
+    } = await db.query(`SELECT * FROM ${tables.orders} WHERE id = $1`, [
+      orderId,
+    ]);
+    return order ? withItems(order) : null;
   },
-
-  findByCustomer(customerId) {
-    return statements.findByCustomer.all(customerId).map((order) => ({
-      ...order,
-      items: statements.findItems.all(order.id),
-    }));
+  async findByCustomer(customerId) {
+    const { rows } = await db.query(
+      `SELECT * FROM ${tables.orders} WHERE customer_id = $1 ORDER BY created_at DESC`,
+      [customerId],
+    );
+    return Promise.all(rows.map((order) => withItems(order)));
   },
-
-  findByVendor(vendorId) {
-    return statements.findByVendor.all(vendorId).map((order) => ({
-      ...order,
-      items: statements.findItems
-        .all(order.id)
-        .filter((item) => item.vendor_id === vendorId),
-    }));
+  async findByVendor(vendorId) {
+    const { rows } = await db.query(
+      `SELECT DISTINCT o.* FROM ${tables.orders} o JOIN ${tables.order_items} oi ON oi.order_id = o.id WHERE oi.vendor_id = $1 ORDER BY o.created_at DESC`,
+      [vendorId],
+    );
+    return Promise.all(rows.map((order) => withItems(order, db, vendorId)));
   },
-
-  belongsToVendor(orderId, vendorId) {
-    return db
-      .prepare(
-        `
-      SELECT 1 FROM order_items
-      WHERE order_id = ? AND vendor_id = ?
-      LIMIT 1
-    `,
-      )
-      .get(orderId, vendorId);
+  async belongsToVendor(orderId, vendorId) {
+    return (
+      (
+        await db.query(
+          `SELECT 1 FROM ${tables.order_items} WHERE order_id = $1 AND vendor_id = $2 LIMIT 1`,
+          [orderId, vendorId],
+        )
+      ).rowCount > 0
+    );
   },
-
-  updateStatus(orderId, status) {
-    return statements.updateStatus.run(status, orderId).changes > 0;
+  async updateStatus(orderId, status) {
+    return (
+      (
+        await db.query(
+          `UPDATE ${tables.orders} SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2`,
+          [status, orderId],
+        )
+      ).rowCount > 0
+    );
   },
 };

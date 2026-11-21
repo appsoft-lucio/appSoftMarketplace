@@ -1,31 +1,36 @@
 import { orderService } from "../services/orderService.js";
 
 function sendError(res, error) {
-  res.status(error.status || 500).json({
-    message: error.message || "Erro interno do servidor.",
+  const status = error.status || 500;
+  if (status === 500)
+    console.error("API database error:", error.code || "unknown");
+  res.status(status).json({
+    message: status === 500 ? "Erro interno do servidor." : error.message,
   });
 }
 
 export const orderController = {
-  checkout(req, res) {
+  async checkout(req, res) {
     try {
-      res.status(201).json({ order: orderService.checkout(req.auth.sub) });
+      res
+        .status(201)
+        .json({ order: await orderService.checkout(req.auth.sub) });
     } catch (error) {
       sendError(res, error);
     }
   },
 
-  listMine(req, res) {
+  async listMine(req, res) {
     try {
-      res.json({ orders: orderService.listByCustomer(req.auth.sub) });
+      res.json({ orders: await orderService.listByCustomer(req.auth.sub) });
     } catch (error) {
       sendError(res, error);
     }
   },
 
-  get(req, res) {
+  async get(req, res) {
     try {
-      const order = orderService.getCustomerOrder(
+      const order = await orderService.getCustomerOrder(
         req.auth.sub,
         Number(req.params.id),
       );
@@ -35,9 +40,9 @@ export const orderController = {
     }
   },
 
-  cancel(req, res) {
+  async cancel(req, res) {
     try {
-      const order = orderService.cancelByCustomer(
+      const order = await orderService.cancelByCustomer(
         req.auth.sub,
         Number(req.params.id),
       );
@@ -47,17 +52,17 @@ export const orderController = {
     }
   },
 
-  listVendor(req, res) {
+  async listVendor(req, res) {
     try {
-      res.json({ orders: orderService.listByVendor(req.auth.sub) });
+      res.json({ orders: await orderService.listByVendor(req.auth.sub) });
     } catch (error) {
       sendError(res, error);
     }
   },
 
-  updateStatus(req, res) {
+  async updateStatus(req, res) {
     try {
-      const order = orderService.updateStatus(
+      const order = await orderService.updateStatus(
         req.auth.sub,
         Number(req.params.id),
         req.body.status,

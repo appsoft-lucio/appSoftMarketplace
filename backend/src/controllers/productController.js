@@ -1,50 +1,53 @@
 import { productService } from "../services/productService.js";
 
 function sendError(res, error) {
-  res.status(error.status || 500).json({
-    message: error.message || "Erro interno do servidor.",
+  const status = error.status || 500;
+  if (status === 500)
+    console.error("API database error:", error.code || "unknown");
+  res.status(status).json({
+    message: status === 500 ? "Erro interno do servidor." : error.message,
   });
 }
 
 export const productController = {
-  list(_req, res) {
+  async list(_req, res) {
     try {
-      res.json({ products: productService.list() });
+      res.json({ products: await productService.list() });
     } catch (error) {
       sendError(res, error);
     }
   },
 
-  listMine(req, res) {
+  async listMine(req, res) {
     try {
       res.json({
-        products: productService.listByVendor(req.auth.sub),
+        products: await productService.listByVendor(req.auth.sub),
       });
     } catch (error) {
       sendError(res, error);
     }
   },
 
-  get(req, res) {
+  async get(req, res) {
     try {
-      res.json({ product: productService.getById(req.params.id) });
+      res.json({ product: await productService.getById(req.params.id) });
     } catch (error) {
       sendError(res, error);
     }
   },
 
-  create(req, res) {
+  async create(req, res) {
     try {
-      const product = productService.create(req.auth.sub, req.body);
+      const product = await productService.create(req.auth.sub, req.body);
       res.status(201).json({ product });
     } catch (error) {
       sendError(res, error);
     }
   },
 
-  update(req, res) {
+  async update(req, res) {
     try {
-      const product = productService.update(
+      const product = await productService.update(
         req.params.id,
         req.auth.sub,
         req.body,
@@ -55,9 +58,9 @@ export const productController = {
     }
   },
 
-  remove(req, res) {
+  async remove(req, res) {
     try {
-      productService.remove(req.params.id, req.auth.sub);
+      await productService.remove(req.params.id, req.auth.sub);
       res.status(204).send();
     } catch (error) {
       sendError(res, error);

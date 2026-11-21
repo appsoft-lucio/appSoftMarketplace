@@ -1,72 +1,70 @@
-import db from "../database.js";
-
-const statements = {
-  findAll: db.prepare(`
-    SELECT p.*, u.name AS vendor_name
-    FROM products p
-    JOIN users u ON u.id = p.vendor_id
-    WHERE p.active = 1
-    ORDER BY p.created_at DESC
-  `),
-  findByVendor: db.prepare(`
-    SELECT p.*, u.name AS vendor_name
-    FROM products p
-    JOIN users u ON u.id = p.vendor_id
-    WHERE p.vendor_id = ?
-    ORDER BY p.created_at DESC
-  `),
-  findById: db.prepare(`
-    SELECT * FROM products WHERE id = ?
-  `),
-  create: db.prepare(`
-    INSERT INTO products
-      (vendor_id, name, description, price, category, stock, image_url)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `),
-  update: db.prepare(`
-    UPDATE products
-    SET name = ?, description = ?, price = ?, category = ?, stock = ?,
-        image_url = ?, active = ?
-    WHERE id = ? AND vendor_id = ?
-  `),
-  remove: db.prepare(`
-    UPDATE products SET active = 0
-    WHERE id = ? AND vendor_id = ?
-  `),
-};
+import db, { tables } from "../database.js";
 
 export const productRepository = {
-  findAll: () => statements.findAll.all(),
-  findByVendor: (vendorId) => statements.findByVendor.all(vendorId),
-  findById: (id) => statements.findById.get(id),
-  create: (product) => {
-    const result = statements.create.run(
-      product.vendorId,
-      product.name,
-      product.description,
-      product.price,
-      product.category,
-      product.stock,
-      product.imageUrl,
-    );
-    return statements.findById.get(result.lastInsertRowid);
+  async findAll() {
+    return (
+      await db.query(
+        `SELECT p.*, u.name AS vendor_name FROM ${tables.products} p JOIN ${tables.users} u ON u.id = p.vendor_id WHERE p.active = 1 ORDER BY p.created_at DESC`,
+      )
+    ).rows;
   },
-  update: (id, vendorId, product) => {
-    const result = statements.update.run(
-      product.name,
-      product.description,
-      product.price,
-      product.category,
-      product.stock,
-      product.imageUrl,
-      product.active,
-      id,
-      vendorId,
-    );
-    return result.changes > 0 ? statements.findById.get(id) : null;
+  async findByVendor(vendorId) {
+    return (
+      await db.query(
+        `SELECT p.*, u.name AS vendor_name FROM ${tables.products} p JOIN ${tables.users} u ON u.id = p.vendor_id WHERE p.vendor_id = $1 ORDER BY p.created_at DESC`,
+        [vendorId],
+      )
+    ).rows;
   },
-  remove: (id, vendorId) => {
-    const result = statements.remove.run(id, vendorId);
-    return result.changes > 0;
+  async findById(id) {
+    return (
+      await db.query(`SELECT * FROM ${tables.products} WHERE id = $1`, [id])
+    ).rows[0];
+  },
+  async create(p) {
+    return (
+      await db.query(
+        `INSERT INTO ${tables.products} (vendor_id, name, description, price, category, stock, image_url) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+        [
+          p.vendorId,
+          p.name,
+          p.description,
+          p.price,
+          p.category,
+          p.stock,
+          p.imageUrl,
+        ],
+      )
+    ).rows[0];
+  },
+  async update(id, vendorId, p) {
+    return (
+      (
+        await db.query(
+          `UPDATE ${tables.products} SET name = $1, description = $2, price = $3, category = $4, stock = $5, image_url = $6, active = $7 WHERE id = $8 AND vendor_id = $9 RETURNING *`,
+          [
+            p.name,
+            p.description,
+            p.price,
+            p.category,
+            p.stock,
+            p.imageUrl,
+            p.active,
+            id,
+            vendorId,
+          ],
+        )
+      ).rows[0] || null
+    );
+  },
+  async remove(id, vendorId) {
+    return (
+      (
+        await db.query(
+          `UPDATE ${tables.products} SET active = 0 WHERE id = $1 AND vendor_id = $2`,
+          [id, vendorId],
+        )
+      ).rowCount > 0
+    );
   },
 };

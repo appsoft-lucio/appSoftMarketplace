@@ -1,23 +1,26 @@
 import { cartService } from "../services/cartService.js";
 
 function sendError(res, error) {
-  res.status(error.status || 500).json({
-    message: error.message || "Erro interno do servidor.",
+  const status = error.status || 500;
+  if (status === 500)
+    console.error("API database error:", error.code || "unknown");
+  res.status(status).json({
+    message: status === 500 ? "Erro interno do servidor." : error.message,
   });
 }
 
 export const cartController = {
-  list(req, res) {
+  async list(req, res) {
     try {
-      res.json(cartService.list(req.auth.sub));
+      res.json(await cartService.list(req.auth.sub));
     } catch (error) {
       sendError(res, error);
     }
   },
 
-  add(req, res) {
+  async add(req, res) {
     try {
-      const result = cartService.add(
+      const result = await cartService.add(
         req.auth.sub,
         req.body.productId,
         req.body.quantity,
@@ -28,9 +31,9 @@ export const cartController = {
     }
   },
 
-  update(req, res) {
+  async update(req, res) {
     try {
-      const result = cartService.update(
+      const result = await cartService.update(
         req.auth.sub,
         req.params.productId,
         req.body.quantity,
@@ -41,17 +44,17 @@ export const cartController = {
     }
   },
 
-  remove(req, res) {
+  async remove(req, res) {
     try {
-      res.json(cartService.remove(req.auth.sub, req.params.productId));
+      res.json(await cartService.remove(req.auth.sub, req.params.productId));
     } catch (error) {
       sendError(res, error);
     }
   },
 
-  clear(req, res) {
+  async clear(req, res) {
     try {
-      res.json(cartService.clear(req.auth.sub));
+      res.json(await cartService.clear(req.auth.sub));
     } catch (error) {
       sendError(res, error);
     }

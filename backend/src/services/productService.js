@@ -29,36 +29,36 @@ function validateProduct(product) {
 }
 
 export const productService = {
-  list() {
-    return productRepository.findAll();
+  async list() {
+    return await productRepository.findAll();
   },
 
-  listByVendor(vendorId) {
-    return productRepository.findByVendor(vendorId);
+  async listByVendor(vendorId) {
+    return await productRepository.findByVendor(vendorId);
   },
 
-  getById(id) {
-    const product = productRepository.findById(Number(id));
+  async getById(id) {
+    const product = await productRepository.findById(Number(id));
     if (!product || product.active === 0) {
       throw { status: 404, message: "Produto não encontrado." };
     }
     return product;
   },
 
-  create(vendorId, payload) {
+  async create(vendorId, payload) {
     const product = validateProduct(payload);
-    return productRepository.create({ ...product, vendorId });
+    return await productRepository.create({ ...product, vendorId });
   },
 
-  update(id, vendorId, payload) {
+  async update(id, vendorId, payload) {
     const product = validateProduct(payload);
-    const existing = productRepository.findById(Number(id));
+    const existing = await productRepository.findById(Number(id));
 
     if (!existing || existing.vendor_id !== vendorId) {
       throw { status: 404, message: "Produto não encontrado." };
     }
 
-    const updated = productRepository.update(Number(id), vendorId, {
+    const updated = await productRepository.update(Number(id), vendorId, {
       ...product,
       active: payload.active === false ? 0 : 1,
     });
@@ -69,8 +69,8 @@ export const productService = {
     return updated;
   },
 
-  remove(id, vendorId) {
-    if (!productRepository.remove(Number(id), vendorId)) {
+  async remove(id, vendorId) {
+    if (!(await productRepository.remove(Number(id), vendorId))) {
       throw { status: 404, message: "Produto não encontrado." };
     }
   },

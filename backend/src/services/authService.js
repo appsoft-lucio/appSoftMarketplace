@@ -39,44 +39,44 @@ function validateCredentials({ name, email, password }) {
 }
 
 export const authService = {
-  register({ name, email, password, role }) {
+  async register({ name, email, password, role }) {
     name = name?.trim();
     email = email?.trim().toLowerCase();
     role = role === "vendor" ? "vendor" : "customer";
 
     validateCredentials({ name, email, password });
 
-    if (userRepository.findByEmail(email)) {
+    if (await userRepository.findByEmail(email)) {
       throw { status: 409, message: "Este e-mail já está cadastrado." };
     }
 
-    const user = userRepository.create({
+    const user = await userRepository.create({
       name,
       email,
-      passwordHash: bcrypt.hashSync(password, 10),
+      passwordHash: await bcrypt.hash(password, 10),
       role,
     });
 
     return { user: publicUser(user), token: createToken(user) };
   },
 
-  login({ email, password }) {
+  async login({ email, password }) {
     email = email?.trim().toLowerCase();
 
     if (!email || !password) {
       throw { status: 400, message: "Informe e-mail e senha." };
     }
 
-    const user = userRepository.findByEmail(email);
-    if (!user || !bcrypt.compareSync(password, user.password_hash)) {
+    const user = await userRepository.findByEmail(email);
+    if (!user || !(await bcrypt.compare(password, user.password_hash))) {
       throw { status: 401, message: "E-mail ou senha incorretos." };
     }
 
     return { user: publicUser(user), token: createToken(user) };
   },
 
-  getAuthenticatedUser(userId) {
-    const user = userRepository.findById(userId);
+  async getAuthenticatedUser(userId) {
+    const user = await userRepository.findById(userId);
     if (!user) {
       throw { status: 404, message: "Usuário não encontrado." };
     }

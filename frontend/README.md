@@ -1,27 +1,29 @@
-# AppSoft Marketplace ? frontend
+# AppSoft Marketplace — frontend
 
-Interface React com Vite e React Router. O backend fica em `../backend`.
+Interface React com Vite e React Router. A API Express fica em `../backend` e
+usa PostgreSQL no Supabase. Consulte [as instruções do backend](../backend/README.md)
+para configurar a conexão, criar as tabelas e importar dados do SQLite antigo.
 
 ## Desenvolvimento
 
-No diret?rio `backend`, instale as depend?ncias e execute a API:
+No diretório `backend`, após configurar o banco:
+
+```sh
+npm install
+npm run db:migrate
+npm run dev
+```
+
+Em outro terminal, no diretório `frontend`:
 
 ```sh
 npm install
 npm run dev
 ```
 
-Em outro terminal, no diret?rio `frontend`:
+A API usa a porta 4000 e o Vite usa a porta 5173 por padrão.
 
-```sh
-npm install
-npm run dev
-```
-
-A API usa a porta 4000 e o Vite usa a porta 5173 por padr?o. As op??es do
-backend est?o em `backend/.env.example`.
-
-## Endere?o da API
+## Endereço da API
 
 Copie `frontend/.env.example` para `frontend/.env` e configure:
 
@@ -29,26 +31,29 @@ Copie `frontend/.env.example` para `frontend/.env` e configure:
 VITE_API_URL=http://localhost:4000/api
 ```
 
-Inclua `/api` na URL. Sem essa vari?vel, o frontend usa o endere?o local acima.
-Reinicie o Vite ap?s alterar o arquivo. Em produ??o, configure a vari?vel antes
-de executar `npm run build`: ela ? incorporada aos arquivos gerados e ? p?blica.
-Configure tamb?m `FRONTEND_URL` no backend com a origem do frontend para o CORS.
+Inclua `/api` na URL. No desenvolvimento, sem essa variável, o frontend usa o
+endereço local acima. Em produção, ela é obrigatória e deve apontar para uma API
+pública com HTTPS.
 
-## Navega??o e publica??o
+Reinicie o Vite após alterar o arquivo. Em produção, configure a variável antes
+de executar `npm run build`: ela é incorporada aos arquivos gerados e é pública.
+Configure também `FRONTEND_URL` no backend com a origem do frontend para o CORS.
+Nunca coloque a conexão PostgreSQL ou a senha do banco em variáveis `VITE_`.
 
-As telas t?m URLs pr?prias: `/`, `/login`, `/cadastro`, `/recuperar-senha`,
+## Navegação e publicação
+
+As telas têm URLs próprias: `/`, `/login`, `/cadastro`, `/recuperar-senha`,
 `/carrinho`, `/perfil`, `/vendedor` e `/vendedor/painel`.
-Carrinho e perfil exigem sess?o local; o painel exige perfil vendedor.
-O backend continua respons?vel por validar o JWT e as permiss?es.
+Carrinho e perfil exigem sessão local; o painel exige perfil vendedor.
+O backend continua responsável por validar o JWT e as permissões.
 
 Ao publicar `dist/`, configure a hospedagem para servir `index.html` nas rotas
-que n?o correspondem a arquivos est?ticos. Isso permite abrir links diretamente
-e atualizar a p?gina. O Vite j? oferece esse comportamento no desenvolvimento.
+que não correspondem a arquivos estáticos. Isso permite abrir links diretamente
+e atualizar a página. O Vite já oferece esse comportamento no desenvolvimento.
 
-## Verifica??o
+## Verificação
 
 No frontend, execute `npm run build` e `npm run lint`.
-No backend, execute `npm test`. O teste de integra??o inicia uma API em uma
-porta tempor?ria e usa um banco SQLite em uma pasta tempor?ria, sem acessar
-`backend/data/appsoft.db`. Ele verifica login, permiss?es, cadastro de produto,
-quantidade e estoque, checkout e listagem do pedido para cliente e vendedor.
+No backend, execute `npm test` para os testes isolados com PostgreSQL em memória
+ou `npm run test:postgres` para incluir concorrência em um schema temporário no
+PostgreSQL real. Nenhum desses testes usa os dados do schema `appsoft`.

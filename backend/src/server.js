@@ -1,26 +1,27 @@
-import "dotenv/config";
-import express from "express";
-import cors from "cors";
-import authRoutes from "./routes/authRoutes.js";
-import productRoutes from "./routes/productRoutes.js";
-import cartRoutes from "./routes/cartRoutes.js";
-import orderRoutes from "./routes/orderRoutes.js";
+import app from "./app.js";
+import { pool, tables } from "./database.js";
 
-const app = express();
 const port = Number(process.env.PORT || 4000);
-
-app.use(cors({ origin: process.env.FRONTEND_URL || "http://localhost:5173" }));
-app.use(express.json());
-
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
-
-app.use("/api/auth", authRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/cart", cartRoutes);
-app.use("/api/orders", orderRoutes);
-
-app.listen(port, () => {
-  console.log(`AppSoft API rodando em http://localhost:${port}`);
-});
+try {
+  await pool.query(`SELECT id FROM ${tables.users} LIMIT 0`);
+  const server = app.listen(port, () => {
+    console.log(
+      `AppSoft API rodando em http://localhost:${server.address().port}`,
+    );
+  });
+  for (const signal of ["SIGINT", "SIGTERM"]) {
+    process.once(signal, () =>
+      server.close(async () => {
+        await pool.end();
+        process.exit(0);
+      }),
+    );
+  }
+} catch (error) {
+  console.error(
+    "Falha ao iniciar API. Confira DATABASE_URL e execute npm run db:migrate. Codigo:",
+    error.code || "unknown",
+  );
+  await pool.end();
+  process.exitCode = 1;
+}
