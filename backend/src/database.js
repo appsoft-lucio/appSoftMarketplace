@@ -28,6 +28,45 @@ db.exec(`
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (vendor_id) REFERENCES users(id) ON DELETE CASCADE
   );
+
+  CREATE TABLE IF NOT EXISTS cart_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1 CHECK(quantity > 0),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, product_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    customer_id INTEGER NOT NULL,
+    subtotal REAL NOT NULL CHECK(subtotal >= 0),
+    shipping REAL NOT NULL DEFAULT 25 CHECK(shipping >= 0),
+    total REAL NOT NULL CHECK(total >= 0),
+    status TEXT NOT NULL DEFAULT 'processando'
+      CHECK(status IN ('processando', 'pago', 'em_transito', 'entregue', 'cancelado')),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS order_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id INTEGER NOT NULL,
+    product_id INTEGER NOT NULL,
+    vendor_id INTEGER NOT NULL,
+    product_name TEXT NOT NULL,
+    unit_price REAL NOT NULL CHECK(unit_price >= 0),
+    quantity INTEGER NOT NULL CHECK(quantity > 0),
+    subtotal REAL NOT NULL CHECK(subtotal >= 0),
+    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
+    FOREIGN KEY (product_id) REFERENCES products(id),
+    FOREIGN KEY (vendor_id) REFERENCES users(id)
+  );
 `);
 
 const demoUsers = [
