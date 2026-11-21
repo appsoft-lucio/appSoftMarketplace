@@ -100,7 +100,11 @@ export const orderRepository = {
   },
   async findByVendor(vendorId) {
     const { rows } = await db.query(
-      `SELECT DISTINCT o.* FROM ${tables.orders} o JOIN ${tables.order_items} oi ON oi.order_id = o.id WHERE oi.vendor_id = $1 ORDER BY o.created_at DESC`,
+      `SELECT DISTINCT o.*, u.name AS customer_name,
+        (SELECT COUNT(DISTINCT all_items.vendor_id)::int FROM ${tables.order_items} all_items WHERE all_items.order_id = o.id) AS vendor_count
+       FROM ${tables.orders} o JOIN ${tables.order_items} oi ON oi.order_id = o.id
+       JOIN ${tables.users} u ON u.id = o.customer_id
+       WHERE oi.vendor_id = $1 ORDER BY o.created_at DESC`,
       [vendorId],
     );
     return Promise.all(rows.map((order) => withItems(order, db, vendorId)));

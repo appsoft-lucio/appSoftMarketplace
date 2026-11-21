@@ -252,11 +252,11 @@ test("PostgreSQL API integration", { timeout: 120000 }, async (t) => {
         (await request("/orders/mine", { token: customer.token })).orders[0].id,
         order.id,
       );
-      assert.equal(
-        (await request("/orders/vendor/mine", { token: vendor.token }))
-          .orders[0].id,
-        order.id,
-      );
+      const vendorOrder = (await request("/orders/vendor/mine", { token: vendor.token })).orders[0];
+      assert.equal(vendorOrder.id, order.id);
+      assert.equal(vendorOrder.customer_name, customer.user.name);
+      assert.equal(vendorOrder.vendor_count, 1);
+      assert.equal(vendorOrder.items.reduce((sum, item) => sum + item.subtotal, 0), 99.8);
       await request(`/orders/${order.id}`, {
         token: stranger.token,
         status: 404,

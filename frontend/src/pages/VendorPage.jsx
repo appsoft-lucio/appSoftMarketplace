@@ -1,116 +1,23 @@
+import { useEffect, useState } from "react";
 import Button from "../components/Button";
+import { productService } from "../services/products";
 import "./VendorPage.css";
 
-const produtosVendidos = [
-  { id: 1, nome: "Smart Watch X", preco: "R$ 899,00", status: "Mais vendido" },
-  { id: 2, nome: "Notebook Lite", preco: "R$ 2.499,00", status: "Novo" },
-  { id: 3, nome: "Caixa de Som Mini", preco: "R$ 349,90", status: "Trending" },
-];
-
-const metragem = [
-  { label: "Vendas no mês", value: "1.284" },
-  { label: "Avaliação", value: "4.9/5" },
-  { label: "Tempo médio", value: "24h" },
-];
-
-function VendorPage({ onNavigate }) {
-  return (
-    <div className="vendor-page">
-      <div className="vendor-shell">
-        <header className="vendor-topbar">
-          <button
-            type="button"
-            className="back-link"
-            onClick={() => onNavigate("home")}
-          >
-            ← Voltar
-          </button>
-
-          <div className="profile-actions">
-            <Button
-              variant="primary"
-              onClick={() => onNavigate("vendor-dashboard")}
-            >
-              Dashboard
-            </Button>
-            <Button variant="light" onClick={() => onNavigate("home")}>
-              Ver catálogo
-            </Button>
-            <Button variant="light" onClick={() => onNavigate("login")}>
-              Sair
-            </Button>
-          </div>
-        </header>
-
-        <section className="vendor-hero">
-          <div className="vendor-cover">
-            <span>Loja oficial</span>
-          </div>
-
-          <div className="vendor-main">
-            <div className="vendor-brand">
-              <div className="vendor-logo">TN</div>
-              <div>
-                <h1>TechNova</h1>
-                <p>Eletrônicos e gadgets premium</p>
-              </div>
-            </div>
-
-            <div className="vendor-stats">
-              {metragem.map((item) => (
-                <div key={item.label} className="vendor-stat">
-                  <strong>{item.value}</strong>
-                  <span>{item.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <div className="vendor-layout">
-          <section className="vendor-card vendor-about">
-            <h2>Sobre a loja</h2>
-            <p>
-              A TechNova combina tecnologia, design e atendimento de alto nível,
-              com foco em produtos inovadores para o dia a dia digital.
-            </p>
-
-            <ul>
-              <li>Entrega em até 48h para capitais</li>
-              <li>Suporte técnico por chat e WhatsApp</li>
-              <li>Garantia oficial em todos os itens</li>
-            </ul>
-          </section>
-
-          <section className="vendor-card vendor-products">
-            <div className="section-header">
-              <h2>Produtos mais vendidos</h2>
-              <button
-                type="button"
-                className="text-link"
-                onClick={() => onNavigate("home")}
-              >
-                Ver todos
-              </button>
-            </div>
-
-            <div className="product-list">
-              {produtosVendidos.map((produto) => (
-                <article key={produto.id} className="vendor-product-item">
-                  <div className="vendor-product-thumb" />
-                  <div className="vendor-product-copy">
-                    <span>{produto.status}</span>
-                    <h3>{produto.nome}</h3>
-                    <strong>{produto.preco}</strong>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
-  );
+const money = value => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(Number(value));
+export default function VendorPage({ onNavigate, user, onLogout }) {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const isVendor = user?.role === "vendor";
+  useEffect(() => {
+    let active = true;
+    if (!isVendor) { setLoading(false); return; }
+    productService.mine().then(data => { if (active) setProducts(data.products.filter(p => p.active)); }).catch(err => { if (active) setError(err.message); }).finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [isVendor, user?.id]);
+  return <div className="vendor-page"><div className="vendor-shell">
+    <header className="vendor-topbar"><button className="back-link" onClick={() => onNavigate("home")}>Voltar ao marketplace</button><div className="profile-actions">{isVendor && <Button onClick={() => onNavigate("vendor-dashboard")}>Gerenciar loja</Button>}<Button variant="light" onClick={() => onNavigate("home")}>Ver catálogo</Button>{user && <Button variant="light" onClick={onLogout}>Sair</Button>}</div></header>
+    {isVendor ? <><section className="vendor-hero"><div className="vendor-cover"><span>Minha loja</span></div><div className="vendor-main"><div className="vendor-brand"><div className="vendor-logo">{(user.name || "Loja").slice(0, 2).toUpperCase()}</div><div><h1>{user.name}</h1><p>Confira os produtos ativos da sua loja.</p></div></div><div className="vendor-stats"><div className="vendor-stat"><strong>{products.length}</strong><span>Produtos ativos</span></div></div></div></section>
+    <section className="vendor-card"><div className="section-header"><h2>Produtos da loja</h2><Button onClick={() => onNavigate("vendor-dashboard")}>Gerenciar produtos</Button></div>{error && <p role="alert">{error}</p>}{loading ? <p role="status">Carregando produtos…</p> : !products.length && !error ? <p>Nenhum produto ativo. Cadastre seu primeiro produto no painel.</p> : <div className="product-list">{products.map(p => <article className="vendor-product-item" key={p.id}>{p.image_url ? <img className="vendor-product-thumb" src={p.image_url} alt="" loading="lazy" /> : <div className="vendor-product-thumb" />}<div className="vendor-product-copy"><span>{p.category}</span><h3>{p.name}</h3><strong>{money(p.price)}</strong><p>{p.stock > 0 ? `${p.stock} em estoque` : "Esgotado"}</p></div></article>)}</div>}</section></> : <section className="vendor-card"><h1>Área do vendedor</h1><p>Acesse sua conta de vendedor para gerenciar os produtos e pedidos da sua loja.</p><Button onClick={() => onNavigate("login")}>Entrar</Button></section>}
+  </div></div>;
 }
-
-export default VendorPage;

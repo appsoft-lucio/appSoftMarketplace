@@ -145,8 +145,8 @@ function App() {
       <Route path="/recuperar-senha" element={<ForgotPasswordPage onNavigate={setScreen} />} />
       <Route path="/carrinho" element={protect(<CartPage items={cartItems} summary={cartSummary} onNavigate={setScreen} onUpdateQuantity={updateQuantity} onRemoveItem={removeItem} onCheckout={checkout} />)} />
       <Route path="/perfil" element={protect(<UserProfilePage onNavigate={setScreen} user={user} onLogout={logout} />)} />
-      <Route path="/vendedor" element={<VendorPage onNavigate={setScreen} />} />
-      <Route path="/vendedor/painel" element={protect(<VendorDashboardPage onNavigate={setScreen} onLogout={logout} />, true)} />
+      <Route path="/vendedor" element={<VendorPage onNavigate={setScreen} user={user} onLogout={logout} />} />
+      <Route path="/vendedor/painel" element={protect(<VendorDashboardPage onNavigate={setScreen} onLogout={logout} user={user} />, true)} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
