@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+
 import { cartService } from "./services/cart";
 import { orderService } from "./services/orders";
 import "./App.css";
@@ -11,8 +13,15 @@ import UserProfilePage from "./pages/UserProfilePage";
 import VendorPage from "./pages/VendorPage";
 import VendorDashboardPage from "./pages/VendorDashboardPage";
 
+const screenPaths = {
+  home: "/", login: "/login", register: "/cadastro",
+  forgot: "/recuperar-senha", cart: "/carrinho", profile: "/perfil",
+  vendor: "/vendedor", "vendor-dashboard": "/vendedor/painel",
+};
+
 function App() {
-  const [screen, setScreen] = useState("home");
+  const navigate = useNavigate();
+  const setScreen = (screen) => navigate(screenPaths[screen] || "/");
   const [cartItems, setCartItems] = useState([]);
   const [cartSummary, setCartSummary] = useState({
     subtotal: 0,
@@ -21,7 +30,11 @@ function App() {
   });
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("appsoft_user");
-    return saved ? JSON.parse(saved) : null;
+    try {
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
   });
 
   const normalizeCart = (data) => {
@@ -45,17 +58,25 @@ function App() {
   useEffect(() => {
     if (!localStorage.getItem("appsoft_token")) return;
 
+    let active = true;
     cartService
       .list()
-      .then(normalizeCart)
-      .catch(() => setCartItems([]));
-  }, []);
+      .then((data) => { if (active) normalizeCart(data); })
+      .catch(() => {
+        if (active) {
+          setCartItems([]);
+          setCartSummary({ subtotal: 0, shipping: 25, total: 25 });
+        }
+      });
+    return () => { active = false; };
+  }, [user]);
 
   const logout = () => {
     localStorage.removeItem("appsoft_token");
     localStorage.removeItem("appsoft_user");
     setUser(null);
     setCartItems([]);
+    setCartSummary({ subtotal: 0, shipping: 25, total: 25 });
     setScreen("login");
   };
 
@@ -109,57 +130,25 @@ function App() {
     }
   };
 
-  if (screen === "login") {
-    return (
-      <LoginPage
-        onNavigate={setScreen}
-        onAuthenticated={(authenticatedUser) => setUser(authenticatedUser)}
-      />
-    );
-  }
-  if (screen === "register") {
-    return (
-      <RegisterPage
-        onNavigate={setScreen}
-        onAuthenticated={(authenticatedUser) => setUser(authenticatedUser)}
-      />
-    );
-  }
-  if (screen === "forgot") return <ForgotPasswordPage onNavigate={setScreen} />;
-  if (screen === "cart") {
-    return (
-      <CartPage
-        items={cartItems}
-        summary={cartSummary}
-        onNavigate={setScreen}
-        onUpdateQuantity={updateQuantity}
-        onRemoveItem={removeItem}
-        onCheckout={checkout}
-      />
-    );
-  }
-
-  if (screen === "profile") {
-    return (
-      <UserProfilePage onNavigate={setScreen} user={user} onLogout={logout} />
-    );
-  }
-
-  if (screen === "vendor") {
-    return <VendorPage onNavigate={setScreen} />;
-  }
-
-  if (screen === "vendor-dashboard") {
-    return <VendorDashboardPage onNavigate={setScreen} onLogout={logout} />;
-  }
+  const authenticated = Boolean(user && localStorage.getItem("appsoft_token"));
+  const protect = (page, vendorOnly = false) => {
+    if (!authenticated) return <Navigate to="/login" replace />;
+    if (vendorOnly && user.role !== "vendor") return <Navigate to="/" replace />;
+    return page;
+  };
 
   return (
-    <HomePage
-      onNavigate={setScreen}
-      cartCount={cartCount}
-      onAddToCart={addToCart}
-      onLogout={logout}
-    />
+    <Routes>
+      <Route path="/" element={<HomePage onNavigate={setScreen} cartCount={cartCount} onAddToCart={addToCart} onLogout={logout} />} />
+      <Route path="/login" element={<LoginPage onNavigate={setScreen} onAuthenticated={setUser} />} />
+      <Route path="/cadastro" element={<RegisterPage onNavigate={setScreen} onAuthenticated={setUser} />} />
+      <Route path="/recuperar-senha" element={<ForgotPasswordPage onNavigate={setScreen} />} />
+      <Route path="/carrinho" element={protect(<CartPage items={cartItems} summary={cartSummary} onNavigate={setScreen} onUpdateQuantity={updateQuantity} onRemoveItem={removeItem} onCheckout={checkout} />)} />
+      <Route path="/perfil" element={protect(<UserProfilePage onNavigate={setScreen} user={user} onLogout={logout} />)} />
+      <Route path="/vendedor" element={<VendorPage onNavigate={setScreen} />} />
+      <Route path="/vendedor/painel" element={protect(<VendorDashboardPage onNavigate={setScreen} onLogout={logout} />, true)} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 

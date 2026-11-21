@@ -1,16 +1,54 @@
-# React + Vite
+# AppSoft Marketplace ? frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Interface React com Vite e React Router. O backend fica em `../backend`.
 
-Currently, two official plugins are available:
+## Desenvolvimento
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+No diret?rio `backend`, instale as depend?ncias e execute a API:
 
-## React Compiler
+```sh
+npm install
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Em outro terminal, no diret?rio `frontend`:
 
-## Expanding the Oxlint configuration
+```sh
+npm install
+npm run dev
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+A API usa a porta 4000 e o Vite usa a porta 5173 por padr?o. As op??es do
+backend est?o em `backend/.env.example`.
+
+## Endere?o da API
+
+Copie `frontend/.env.example` para `frontend/.env` e configure:
+
+```dotenv
+VITE_API_URL=http://localhost:4000/api
+```
+
+Inclua `/api` na URL. Sem essa vari?vel, o frontend usa o endere?o local acima.
+Reinicie o Vite ap?s alterar o arquivo. Em produ??o, configure a vari?vel antes
+de executar `npm run build`: ela ? incorporada aos arquivos gerados e ? p?blica.
+Configure tamb?m `FRONTEND_URL` no backend com a origem do frontend para o CORS.
+
+## Navega??o e publica??o
+
+As telas t?m URLs pr?prias: `/`, `/login`, `/cadastro`, `/recuperar-senha`,
+`/carrinho`, `/perfil`, `/vendedor` e `/vendedor/painel`.
+Carrinho e perfil exigem sess?o local; o painel exige perfil vendedor.
+O backend continua respons?vel por validar o JWT e as permiss?es.
+
+Ao publicar `dist/`, configure a hospedagem para servir `index.html` nas rotas
+que n?o correspondem a arquivos est?ticos. Isso permite abrir links diretamente
+e atualizar a p?gina. O Vite j? oferece esse comportamento no desenvolvimento.
+
+## Verifica??o
+
+No frontend, execute `npm run build` e `npm run lint`.
+No backend, execute `npm test`. O teste de integra??o inicia uma API em uma
+porta tempor?ria e usa um banco SQLite em uma pasta tempor?ria, sem acessar
+`backend/data/appsoft.db`. Ele verifica login, permiss?es, cadastro de produto,
+quantidade e estoque, checkout e listagem do pedido para cliente e vendedor.
