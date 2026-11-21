@@ -176,13 +176,14 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
   }, []);
 
   useEffect(() => {
+    if (termoBusca.trim()) return;
     const base = produtosApi.length > 0 ? produtosApi : produtos;
     const timer = setInterval(() => {
       setIndiceProdutos((atual) => (atual + 1) % base.length);
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [produtosApi]);
+  }, [produtosApi, termoBusca]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -192,9 +193,10 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
+  const atualizarBusca = (value) => {
+    setTermoBusca(value);
     setIndiceProdutos(0);
-  }, [termoBusca]);
+  };
 
   const ofertaAtual = ofertas[slideAtivo];
   const produtosBaseCompletos = produtosApi.length > 0 ? produtosApi : produtos;
@@ -207,7 +209,7 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
       )
     : produtosBaseCompletos;
   const quantidadeVisivel = Math.min(4, produtosBase.length);
-  const produtosVisiveis = Array.from(
+  const produtosVisiveis = termoNormalizado ? produtosBase : Array.from(
     { length: quantidadeVisivel },
     (_, index) => {
       return produtosBase[(indiceProdutos + index) % produtosBase.length];
@@ -224,10 +226,11 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
         cartCount={cartCount}
         onLogout={onLogout}
         searchValue={termoBusca}
-        onSearchChange={setTermoBusca}
+        onSearchChange={atualizarBusca}
       />
 
       <main className="container">
+        {!termoNormalizado && <>
         <section className="hero">
           <div className="hero-text">
             <span className="badge">Loja digital</span>
@@ -314,11 +317,16 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
           </div>
         </section>
 
-        <section className="products">
-          <div className="section-title">
-            <h2>Produtos em destaque</h2>
+        </>}
 
-            <div className="products-actions">
+        <section className="products" aria-labelledby="products-heading">
+          <div className="section-title">
+            <div>
+              <h2 id="products-heading">{termoNormalizado ? "Resultados da busca" : "Produtos em destaque"}</h2>
+              {termoNormalizado && <p role="status">{produtosBase.length} {produtosBase.length === 1 ? "produto encontrado" : "produtos encontrados"} para ?{termoBusca.trim()}?</p>}
+            </div>
+
+            {!termoNormalizado && <div className="products-actions">
               <button
                 type="button"
                 className="carousel-btn"
@@ -347,7 +355,7 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
               >
                 →
               </button>
-            </div>
+            </div>}
           </div>
 
           <div className="product-grid">
@@ -366,6 +374,7 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
           </div>
         </section>
 
+        {!termoNormalizado && <>
         <section className="stores">
           <div className="section-title">
             <h2>Lojas em destaque</h2>
@@ -456,6 +465,7 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
             ))}
           </div>
         </section>
+        </>}
       </main>
 
       <Footer />
