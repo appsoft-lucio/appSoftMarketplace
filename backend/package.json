@@ -13,6 +13,7 @@
     "db:import-sqlite": "node scripts/import-sqlite.js"
   },
   "dependencies": {
+    "@vercel/functions": "^3.11.3",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^18.0.10",

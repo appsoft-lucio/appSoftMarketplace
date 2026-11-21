@@ -2,6 +2,14 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { userRepository } from "../repositories/userRepository.js";
 
+if (
+  process.env.VERCEL &&
+  (!process.env.JWT_SECRET ||
+    process.env.JWT_SECRET === "troque-esta-chave-em-producao")
+) {
+  throw new Error("Configure um JWT_SECRET exclusivo nas variaveis da Vercel.");
+}
+
 const jwtSecret = process.env.JWT_SECRET || "appsoft-development-secret";
 
 function createToken(user) {

@@ -32,8 +32,8 @@ VITE_API_URL=http://localhost:4000/api
 ```
 
 Inclua `/api` na URL. No desenvolvimento, sem essa variável, o frontend usa o
-endereço local acima. Em produção, ela é obrigatória e deve apontar para uma API
-pública com HTTPS.
+endereço local acima. Em produção, o padrão é `/api`, no mesmo domínio da interface. A variável é
+opcional e pode apontar para outra API pública com HTTPS, se necessário.
 
 Reinicie o Vite após alterar o arquivo. Em produção, configure a variável antes
 de executar `npm run build`: ela é incorporada aos arquivos gerados e é pública.
@@ -57,3 +57,9 @@ No frontend, execute `npm run build` e `npm run lint`.
 No backend, execute `npm test` para os testes isolados com PostgreSQL em memória
 ou `npm run test:postgres` para incluir concorrência em um schema temporário no
 PostgreSQL real. Nenhum desses testes usa os dados do schema `appsoft`.
+
+## Vercel
+
+A publicação usa a raiz do repositório, com frontend e API no mesmo projeto.
+Consulte [o guia de publicação](../README.md). No painel, Root Directory deve
+ser a raiz (`./`), e `VITE_API_URL` deve ser `/api` ou ficar ausente.

@@ -1,5 +1,6 @@
 import "dotenv/config";
 import pg from "pg";
+import { attachDatabasePool } from "@vercel/functions";
 import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
@@ -46,13 +47,15 @@ export const pool = new pg.Pool({
   ssl,
   max: 5,
   connectionTimeoutMillis: 10000,
-  idleTimeoutMillis: 30000,
+  idleTimeoutMillis: 5000,
   types: {
     getTypeParser(oid, format) {
       return oid === 1700 ? Number : pg.types.getTypeParser(oid, format);
     },
   },
 });
+if (process.env.VERCEL) attachDatabasePool(pool);
+
 pool.on("error", (error) =>
   console.error("PostgreSQL connection error:", error.code || "unknown"),
 );

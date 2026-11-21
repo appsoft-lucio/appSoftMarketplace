@@ -85,13 +85,15 @@ ao final. Nunca limpa o schema `appsoft`. Requer permissão para criar schemas.
 O teste de concorrência é ignorado no PGlite porque ele usa uma única conexão
 interna e não representa os bloqueios entre sessões de um servidor PostgreSQL.
 
-## Publicação
+## Publicação na Vercel
 
-Ainda é necessário hospedar a API Express. Na hospedagem, configure
-`DATABASE_URL`, o certificado, `JWT_SECRET` e
-`FRONTEND_URL=https://appsoftmarketplace.vercel.app`.
-Execute a migração antes de iniciar a API com `npm start`.
+Frontend e API agora são publicados no mesmo projeto Vercel. Siga
+[o guia na raiz](../README.md#publicar-no-projeto-vercel-existente).
 
-No frontend da Vercel, configure `VITE_API_URL=https://HOST_DA_API/api` e gere uma
-nova publicação. A URL HTTP do projeto Supabase não substitui a URL da API
-Express. `GET /api/health` deve responder `{"status":"ok"}`.
+Use a conexão Transaction pooler do Supabase (porta 6543) em `DATABASE_URL`.
+A função exporta a aplicação Express por `api/index.js`, sem usar o listener
+de `src/server.js`. Esse listener continua disponível para desenvolvimento local.
+O helper `attachDatabasePool` gerencia conexões ociosas na Vercel.
+
+O certificado público acompanha o deploy. As credenciais ficam somente nas
+variáveis de ambiente do projeto; nunca use `VITE_DATABASE_URL`.

@@ -33,6 +33,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        navigateFallbackDenylist: [/^\/api(?:\/|$)/],
         globPatterns: ["**/*.{js,css,html,svg,png,ico,json,woff2}"],
         maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
       },

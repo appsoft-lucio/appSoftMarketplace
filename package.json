@@ -2,5 +2,13 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.5",
     "tailwindcss": "^4.3.5"
+  },
+  "type": "module",
+  "scripts": {
+    "build": "npm --prefix frontend run build",
+    "test": "npm --prefix backend test"
+  },
+  "engines": {
+    "node": "22.x"
   }
 }

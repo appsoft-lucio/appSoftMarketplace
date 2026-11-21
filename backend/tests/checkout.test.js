@@ -18,6 +18,7 @@ test("PostgreSQL API integration", { timeout: 120000 }, async (t) => {
   process.env.DATABASE_SCHEMA = schema;
   process.env.JWT_SECRET = "isolated-test-secret";
   process.env.NODE_ENV = "test";
+  process.env.VERCEL = "1";
   try {
     if (external) {
       process.env.DATABASE_URL = process.env.TEST_DATABASE_URL;
@@ -102,7 +103,7 @@ test("PostgreSQL API integration", { timeout: 120000 }, async (t) => {
         }
       },
     );
-    const { default: app } = await import("../src/app.js");
+    const { default: app } = await import("../../api/index.js");
     http = app.listen(0, "127.0.0.1");
     await once(http, "listening");
     const base = `http://127.0.0.1:${http.address().port}/api`;
@@ -148,6 +149,7 @@ test("PostgreSQL API integration", { timeout: 120000 }, async (t) => {
 
     await t.test("registration, login and access controls", async () => {
       await request("/health");
+      await request("/missing", { status: 404 });
       await request("/auth/register", {
         method: "POST",
         body: {
