@@ -3,7 +3,7 @@ import Button from "../components/Button";
 import { register } from "../services/auth";
 import "./AuthPages.css";
 
-function RegisterPage({ onNavigate }) {
+function RegisterPage({ onNavigate, onAuthenticated }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [name, setName] = useState("");
@@ -28,6 +28,7 @@ function RegisterPage({ onNavigate }) {
       const data = await register({ name, email, password, role });
       localStorage.setItem("appsoft_token", data.token);
       localStorage.setItem("appsoft_user", JSON.stringify(data.user));
+      onAuthenticated?.(data.user);
       onNavigate(data.user.role === "vendor" ? "vendor-dashboard" : "home");
     } catch (requestError) {
       setError(requestError.message);

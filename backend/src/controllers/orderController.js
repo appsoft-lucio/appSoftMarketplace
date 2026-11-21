@@ -25,7 +25,10 @@ export const orderController = {
 
   get(req, res) {
     try {
-      const order = orderService.getCustomerOrder(req.auth.sub, Number(req.params.id));
+      const order = orderService.getCustomerOrder(
+        req.auth.sub,
+        Number(req.params.id),
+      );
       res.json({ order });
     } catch (error) {
       sendError(res, error);
@@ -34,7 +37,10 @@ export const orderController = {
 
   cancel(req, res) {
     try {
-      const order = orderService.cancelByCustomer(req.auth.sub, Number(req.params.id));
+      const order = orderService.cancelByCustomer(
+        req.auth.sub,
+        Number(req.params.id),
+      );
       res.json({ order });
     } catch (error) {
       sendError(res, error);

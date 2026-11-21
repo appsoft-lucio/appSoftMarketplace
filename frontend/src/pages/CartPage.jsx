@@ -1,11 +1,17 @@
 import Button from "../components/Button";
 import "./AuthPages.css";
 
-function CartPage({ items, onNavigate, onUpdateQuantity, onRemoveItem }) {
-  const subtotal = items.reduce(
-    (total, item) => total + item.preco * item.quantity,
-    0,
-  );
+function CartPage({
+  items,
+  summary,
+  onNavigate,
+  onUpdateQuantity,
+  onRemoveItem,
+  onCheckout,
+}) {
+  const subtotal = summary?.subtotal ?? 0;
+  const shipping = summary?.shipping ?? 25;
+  const total = summary?.total ?? subtotal + shipping;
 
   return (
     <div className="cart-page">
@@ -91,15 +97,15 @@ function CartPage({ items, onNavigate, onUpdateQuantity, onRemoveItem }) {
 
               <div className="summary-row">
                 <span>Frete</span>
-                <strong>R$ 25,00</strong>
+                <strong>R$ {shipping.toFixed(2)}</strong>
               </div>
 
               <div className="summary-row total">
                 <span>Total</span>
-                <strong>R$ {(subtotal + 25).toFixed(2)}</strong>
+                <strong>R$ {total.toFixed(2)}</strong>
               </div>
 
-              <Button variant="primary" onClick={() => onNavigate("login")}>
+              <Button variant="primary" onClick={onCheckout}>
                 Finalizar compra
               </Button>
             </aside>

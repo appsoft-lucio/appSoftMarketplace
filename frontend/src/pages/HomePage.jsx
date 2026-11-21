@@ -3,6 +3,7 @@ import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Button from "../components/Button";
 import ProductCard from "../components/ProductCard";
+import { productService } from "../services/products";
 import "./HomePage.css";
 
 const categorias = [
@@ -141,8 +142,9 @@ const avaliacoes = [
   },
 ];
 
-function HomePage({ onNavigate, cartCount, onAddToCart }) {
+function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
   const [slideAtivo, setSlideAtivo] = useState(0);
+  const [produtosApi, setProdutosApi] = useState([]);
   const [indiceProdutos, setIndiceProdutos] = useState(0);
   const [indiceLojas, setIndiceLojas] = useState(0);
 
@@ -155,12 +157,30 @@ function HomePage({ onNavigate, cartCount, onAddToCart }) {
   }, []);
 
   useEffect(() => {
+    productService
+      .list()
+      .then((data) => {
+        const reais = data.products.map((produto) => ({
+          id: produto.id,
+          nome: produto.name,
+          preco: produto.price,
+          categoria: produto.category,
+          cor: "azul",
+          stock: produto.stock,
+        }));
+        setProdutosApi(reais);
+      })
+      .catch(() => setProdutosApi([]));
+  }, []);
+
+  useEffect(() => {
+    const base = produtosApi.length > 0 ? produtosApi : produtos;
     const timer = setInterval(() => {
-      setIndiceProdutos((atual) => (atual + 1) % produtos.length);
+      setIndiceProdutos((atual) => (atual + 1) % base.length);
     }, 5000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [produtosApi]);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -171,16 +191,25 @@ function HomePage({ onNavigate, cartCount, onAddToCart }) {
   }, []);
 
   const ofertaAtual = ofertas[slideAtivo];
-  const produtosVisiveis = Array.from({ length: 4 }, (_, index) => {
-    return produtos[(indiceProdutos + index) % produtos.length];
-  });
+  const produtosBase = produtosApi.length > 0 ? produtosApi : produtos;
+  const quantidadeVisivel = Math.min(4, produtosBase.length);
+  const produtosVisiveis = Array.from(
+    { length: quantidadeVisivel },
+    (_, index) => {
+      return produtosBase[(indiceProdutos + index) % produtosBase.length];
+    },
+  );
   const lojasVisiveis = Array.from({ length: 4 }, (_, index) => {
     return lojas[(indiceLojas + index) % lojas.length];
   });
 
   return (
     <div className="marketplace">
-      <Header onNavigate={onNavigate} cartCount={cartCount} />
+      <Header
+        onNavigate={onNavigate}
+        cartCount={cartCount}
+        onLogout={onLogout}
+      />
 
       <main className="container">
         <section className="hero">

@@ -3,7 +3,7 @@ import Button from "../components/Button";
 import { login } from "../services/auth";
 import "./AuthPages.css";
 
-function LoginPage({ onNavigate }) {
+function LoginPage({ onNavigate, onAuthenticated }) {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("cliente@appsoft.com");
   const [password, setPassword] = useState("123456");
@@ -19,6 +19,7 @@ function LoginPage({ onNavigate }) {
       const data = await login(email, password);
       localStorage.setItem("appsoft_token", data.token);
       localStorage.setItem("appsoft_user", JSON.stringify(data.user));
+      onAuthenticated?.(data.user);
       onNavigate(data.user.role === "vendor" ? "vendor-dashboard" : "home");
     } catch (requestError) {
       setError(requestError.message);

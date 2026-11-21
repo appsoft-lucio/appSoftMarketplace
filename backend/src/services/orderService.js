@@ -27,7 +27,10 @@ export const orderService = {
   cancelByCustomer(customerId, orderId) {
     const order = this.getCustomerOrder(customerId, orderId);
 
-    if (!customerStatuses.includes("cancelado") || order.status === "cancelado") {
+    if (
+      !customerStatuses.includes("cancelado") ||
+      order.status === "cancelado"
+    ) {
       throw { status: 400, message: "O pedido não pode ser cancelado." };
     }
 

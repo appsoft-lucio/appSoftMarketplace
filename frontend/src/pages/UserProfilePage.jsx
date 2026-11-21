@@ -1,26 +1,7 @@
+import { useEffect, useState } from "react";
 import Button from "../components/Button";
+import { orderService } from "../services/orders";
 import "./ProfilePage.css";
-
-const pedidosRecentes = [
-  {
-    id: "#1048",
-    produto: "AirPods Pro",
-    status: "Em trânsito",
-    valor: "R$ 1.299,00",
-  },
-  {
-    id: "#2041",
-    produto: "Tênis Runner",
-    status: "Entregue",
-    valor: "R$ 329,90",
-  },
-  {
-    id: "#3099",
-    produto: "Cafeteira Deluxe",
-    status: "Em preparo",
-    valor: "R$ 499,90",
-  },
-];
 
 const favoritos = ["Smart Watch X", "Relógio Smart", "Notebook Lite"];
 
@@ -29,7 +10,24 @@ const enderecos = [
   "Avenida Paulista, 820 - Bela Vista, São Paulo/SP",
 ];
 
-function UserProfilePage({ onNavigate }) {
+function UserProfilePage({ onNavigate, user, onLogout }) {
+  const [pedidos, setPedidos] = useState([]);
+
+  useEffect(() => {
+    orderService
+      .mine()
+      .then((data) => setPedidos(data.orders))
+      .catch(() => setPedidos([]));
+  }, []);
+
+  const iniciais =
+    user?.name
+      ?.split(" ")
+      .map((parte) => parte[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "US";
+
   return (
     <div className="profile-page">
       <div className="profile-shell">
@@ -46,7 +44,10 @@ function UserProfilePage({ onNavigate }) {
             <Button variant="primary" onClick={() => onNavigate("home")}>
               Explorar loja
             </Button>
-            <Button variant="light" onClick={() => onNavigate("login")}>
+            <Button
+              variant="light"
+              onClick={onLogout || (() => onNavigate("login"))}
+            >
               Sair
             </Button>
           </div>
@@ -54,17 +55,17 @@ function UserProfilePage({ onNavigate }) {
 
         <div className="profile-layout">
           <aside className="profile-card profile-summary">
-            <div className="avatar">AM</div>
+            <div className="avatar">{iniciais}</div>
 
             <div className="profile-meta">
-              <h1>Ana Maria</h1>
-              <p>ana.maria@appsoft.com</p>
+              <h1>{user?.name || "Usuário"}</h1>
+              <p>{user?.email || ""}</p>
               <span className="profile-badge">Cliente premium</span>
             </div>
 
             <div className="profile-stats">
               <div>
-                <strong>24</strong>
+                <strong>{pedidos.length}</strong>
                 <span>pedidos</span>
               </div>
               <div>
@@ -92,15 +93,15 @@ function UserProfilePage({ onNavigate }) {
               </div>
 
               <div className="orders-list">
-                {pedidosRecentes.map((pedido) => (
+                {pedidos.map((pedido) => (
                   <div key={pedido.id} className="order-item">
                     <div>
-                      <span className="order-id">{pedido.id}</span>
-                      <h3>{pedido.produto}</h3>
+                      <span className="order-id">#{pedido.id}</span>
+                      <h3>{pedido.items?.[0]?.product_name || "Pedido"}</h3>
                     </div>
 
                     <span className="order-status">{pedido.status}</span>
-                    <strong>{pedido.valor}</strong>
+                    <strong>R$ {pedido.total.toFixed(2)}</strong>
                   </div>
                 ))}
               </div>

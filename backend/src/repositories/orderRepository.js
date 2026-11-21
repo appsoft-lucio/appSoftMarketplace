@@ -114,18 +114,22 @@ export const orderRepository = {
   findByVendor(vendorId) {
     return statements.findByVendor.all(vendorId).map((order) => ({
       ...order,
-      items: statements.findItems.all(order.id).filter(
-        (item) => item.vendor_id === vendorId,
-      ),
+      items: statements.findItems
+        .all(order.id)
+        .filter((item) => item.vendor_id === vendorId),
     }));
   },
 
   belongsToVendor(orderId, vendorId) {
-    return db.prepare(`
+    return db
+      .prepare(
+        `
       SELECT 1 FROM order_items
       WHERE order_id = ? AND vendor_id = ?
       LIMIT 1
-    `).get(orderId, vendorId);
+    `,
+      )
+      .get(orderId, vendorId);
   },
 
   updateStatus(orderId, status) {

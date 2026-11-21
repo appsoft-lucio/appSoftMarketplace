@@ -1,44 +1,62 @@
+import { useEffect, useState } from "react";
 import Button from "../components/Button";
+import { productService } from "../services/products";
+import { orderService } from "../services/orders";
 import "./VendorDashboardPage.css";
 
-const metrics = [
-  { label: "Vendas do mês", value: "R$ 31.240", delta: "+18%" },
-  { label: "Pedidos", value: "1.284", delta: "+12%" },
-  { label: "Clientes ativos", value: "842", delta: "+8%" },
-  { label: "Taxa de conversão", value: "6,4%", delta: "+1,2%" },
-];
+function VendorDashboardPage({ onNavigate, onLogout }) {
+  const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "",
+    stock: "",
+  });
+  const [error, setError] = useState("");
 
-const recentOrders = [
-  {
-    id: "#1048",
-    cliente: "Ana M.",
-    total: "R$ 1.299,00",
-    status: "Em trânsito",
-  },
-  { id: "#1049", cliente: "Pedro R.", total: "R$ 899,00", status: "Pago" },
-  { id: "#1050", cliente: "Lia S.", total: "R$ 349,90", status: "Processando" },
-  {
-    id: "#1051",
-    cliente: "Marcos T.",
-    total: "R$ 2.499,00",
-    status: "Entregue",
-  },
-];
+  const loadDashboard = async () => {
+    try {
+      const [productData, orderData] = await Promise.all([
+        productService.mine(),
+        orderService.mineVendor(),
+      ]);
+      setProducts(productData.products);
+      setOrders(orderData.orders);
+      setError("");
+    } catch (requestError) {
+      setError(requestError.message);
+    }
+  };
 
-const stockItems = [
-  { produto: "Smart Watch X", sku: "SWX-204", qtd: 42 },
-  { produto: "Notebook Lite", sku: "NBL-092", qtd: 18 },
-  { produto: "Caixa de Som Mini", sku: "CSM-774", qtd: 31 },
-  { produto: "AirPods Pro", sku: "APP-120", qtd: 16 },
-];
+  useEffect(() => {
+    loadDashboard();
+  }, []);
 
-const products = [
-  { nome: "Smart Watch X", vendas: 312, faturamento: "R$ 18.400" },
-  { nome: "Notebook Lite", vendas: 118, faturamento: "R$ 19.200" },
-  { nome: "Caixa de Som Mini", vendas: 186, faturamento: "R$ 9.460" },
-];
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    try {
+      await productService.create({
+        ...form,
+        price: Number(form.price),
+        stock: Number(form.stock),
+      });
+      setForm({
+        name: "",
+        description: "",
+        price: "",
+        category: "",
+        stock: "",
+      });
+      setShowForm(false);
+      await loadDashboard();
+    } catch (requestError) {
+      setError(requestError.message);
+    }
+  };
 
-function VendorDashboardPage({ onNavigate }) {
   return (
     <div className="dashboard-page">
       <div className="dashboard-shell">
@@ -55,23 +73,127 @@ function VendorDashboardPage({ onNavigate }) {
           </div>
 
           <div className="dashboard-actions">
+            <Button variant="primary" onClick={() => setShowForm(true)}>
+              Novo produto
+            </Button>
             <Button variant="primary" onClick={() => onNavigate("vendor")}>
               Loja
             </Button>
-            <Button variant="light" onClick={() => onNavigate("login")}>
+            <Button
+              variant="light"
+              onClick={onLogout || (() => onNavigate("login"))}
+            >
               Sair
             </Button>
           </div>
         </header>
 
+        {error && <p className="error-message">{error}</p>}
+
+        {showForm && (
+          <section className="panel-card product-form-panel">
+            <div className="panel-header">
+              <h2>Cadastrar produto</h2>
+              <button
+                type="button"
+                className="text-link"
+                onClick={() => setShowForm(false)}
+              >
+                Fechar
+              </button>
+            </div>
+
+            <form className="auth-form" onSubmit={handleSubmit}>
+              <label className="field-group">
+                <span>Nome</span>
+                <input
+                  value={form.name}
+                  onChange={(event) =>
+                    setForm({ ...form, name: event.target.value })
+                  }
+                  required
+                />
+              </label>
+              <label className="field-group">
+                <span>Descrição</span>
+                <input
+                  value={form.description}
+                  onChange={(event) =>
+                    setForm({ ...form, description: event.target.value })
+                  }
+                />
+              </label>
+              <label className="field-group">
+                <span>Categoria</span>
+                <input
+                  value={form.category}
+                  onChange={(event) =>
+                    setForm({ ...form, category: event.target.value })
+                  }
+                  required
+                />
+              </label>
+              <label className="field-group">
+                <span>Preço</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={form.price}
+                  onChange={(event) =>
+                    setForm({ ...form, price: event.target.value })
+                  }
+                  required
+                />
+              </label>
+              <label className="field-group">
+                <span>Estoque</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={form.stock}
+                  onChange={(event) =>
+                    setForm({ ...form, stock: event.target.value })
+                  }
+                  required
+                />
+              </label>
+              <Button variant="primary" type="submit">
+                Cadastrar
+              </Button>
+            </form>
+          </section>
+        )}
+
         <section className="metrics-grid">
-          {metrics.map((metric) => (
-            <article key={metric.label} className="metric-card">
-              <span>{metric.label}</span>
-              <strong>{metric.value}</strong>
-              <small>{metric.delta}</small>
-            </article>
-          ))}
+          <article className="metric-card">
+            <span>Produtos cadastrados</span>
+            <strong>{products.length}</strong>
+            <small>Estoque ativo</small>
+          </article>
+          <article className="metric-card">
+            <span>Pedidos</span>
+            <strong>{orders.length}</strong>
+            <small>Pedidos recebidos</small>
+          </article>
+          <article className="metric-card">
+            <span>Itens em estoque</span>
+            <strong>
+              {products.reduce((total, product) => total + product.stock, 0)}
+            </strong>
+            <small>Disponíveis</small>
+          </article>
+          <article className="metric-card">
+            <span>Faturamento</span>
+            <strong>
+              R${" "}
+              {orders
+                .reduce((total, order) => total + order.total, 0)
+                .toFixed(2)}
+            </strong>
+            <small>Pedidos registrados</small>
+          </article>
         </section>
 
         <section className="dashboard-grid">
@@ -98,11 +220,11 @@ function VendorDashboardPage({ onNavigate }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {recentOrders.map((pedido) => (
+                  {orders.map((pedido) => (
                     <tr key={pedido.id}>
                       <td>{pedido.id}</td>
-                      <td>{pedido.cliente}</td>
-                      <td>{pedido.total}</td>
+                      <td>Cliente #{pedido.customer_id}</td>
+                      <td>R$ {pedido.total.toFixed(2)}</td>
                       <td>
                         <span className="status-badge">{pedido.status}</span>
                       </td>
@@ -126,13 +248,15 @@ function VendorDashboardPage({ onNavigate }) {
             </div>
 
             <div className="stock-list">
-              {stockItems.map((item) => (
-                <div key={item.sku} className="stock-row">
+              {products.map((item) => (
+                <div key={item.id} className="stock-row">
                   <div>
-                    <strong>{item.produto}</strong>
-                    <span>{item.sku}</span>
+                    <strong>{item.name}</strong>
+                    <span>
+                      #{item.id} • {item.category}
+                    </span>
                   </div>
-                  <span className="stock-qty">{item.qtd} em estoque</span>
+                  <span className="stock-qty">{item.stock} em estoque</span>
                 </div>
               ))}
             </div>
@@ -141,24 +265,17 @@ function VendorDashboardPage({ onNavigate }) {
 
         <section className="panel-card top-products-panel">
           <div className="panel-header">
-            <h2>Produtos em alta</h2>
-            <button
-              type="button"
-              className="text-link"
-              onClick={() => onNavigate("vendor")}
-            >
-              Relatório
-            </button>
+            <h2>Meus produtos</h2>
           </div>
 
           <div className="products-list">
             {products.map((produto) => (
-              <div key={produto.nome} className="product-row">
+              <div key={produto.id} className="product-row">
                 <div>
-                  <h3>{produto.nome}</h3>
-                  <span>{produto.vendas} vendas</span>
+                  <h3>{produto.name}</h3>
+                  <span>{produto.category}</span>
                 </div>
-                <strong>{produto.faturamento}</strong>
+                <strong>R$ {produto.price.toFixed(2)}</strong>
               </div>
             ))}
           </div>

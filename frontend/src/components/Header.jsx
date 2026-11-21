@@ -1,7 +1,7 @@
 import Button from "./Button";
 import logo from "../assets/logo-appsoft-orange-semFundo.png";
 
-function Header({ onNavigate, cartCount = 0 }) {
+function Header({ onNavigate, cartCount = 0, onLogout }) {
   const navItems = [
     { label: "Início", screen: "home" },
     { label: "Categorias", screen: "home" },
@@ -46,7 +46,10 @@ function Header({ onNavigate, cartCount = 0 }) {
         <Button variant="light" onClick={() => onNavigate("profile")}>
           Meu perfil
         </Button>
-        <Button variant="light" onClick={() => onNavigate("login")}>
+        <Button
+          variant="light"
+          onClick={onLogout || (() => onNavigate("login"))}
+        >
           Sair
         </Button>
         <Button variant="primary" onClick={() => onNavigate("cart")}>
