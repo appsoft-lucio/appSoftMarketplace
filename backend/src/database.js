@@ -14,6 +14,20 @@ db.exec(`
     role TEXT NOT NULL CHECK(role IN ('customer', 'vendor')) DEFAULT 'customer',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS products (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    vendor_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    price REAL NOT NULL CHECK(price >= 0),
+    category TEXT NOT NULL,
+    stock INTEGER NOT NULL DEFAULT 0 CHECK(stock >= 0),
+    image_url TEXT NOT NULL DEFAULT '',
+    active INTEGER NOT NULL DEFAULT 1,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (vendor_id) REFERENCES users(id) ON DELETE CASCADE
+  );
 `);
 
 const demoUsers = [
