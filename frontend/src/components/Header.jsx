@@ -1,7 +1,13 @@
 import Button from "./Button";
 import logo from "../assets/logo-appsoft-orange-semFundo.png";
 
-function Header({ onNavigate, cartCount = 0, onLogout }) {
+function Header({
+  onNavigate,
+  cartCount = 0,
+  onLogout,
+  searchValue = "",
+  onSearchChange,
+}) {
   const navItems = [
     { label: "Início", screen: "home" },
     { label: "Categorias", screen: "home" },
@@ -41,6 +47,15 @@ function Header({ onNavigate, cartCount = 0, onLogout }) {
           </button>
         ))}
       </nav>
+
+      <label className="search-box" aria-label="Pesquisar produtos">
+        <input
+          type="search"
+          value={searchValue}
+          onChange={(event) => onSearchChange?.(event.target.value)}
+          placeholder="Pesquisar produtos"
+        />
+      </label>
 
       <div className="actions">
         <Button variant="light" onClick={() => onNavigate("profile")}>

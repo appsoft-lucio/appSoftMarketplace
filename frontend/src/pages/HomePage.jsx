@@ -145,6 +145,7 @@ const avaliacoes = [
 function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
   const [slideAtivo, setSlideAtivo] = useState(0);
   const [produtosApi, setProdutosApi] = useState([]);
+  const [termoBusca, setTermoBusca] = useState("");
   const [indiceProdutos, setIndiceProdutos] = useState(0);
   const [indiceLojas, setIndiceLojas] = useState(0);
 
@@ -167,6 +168,7 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
           categoria: produto.category,
           cor: "azul",
           stock: produto.stock,
+          descricao: produto.description || "",
         }));
         setProdutosApi(reais);
       })
@@ -190,8 +192,20 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    setIndiceProdutos(0);
+  }, [termoBusca]);
+
   const ofertaAtual = ofertas[slideAtivo];
-  const produtosBase = produtosApi.length > 0 ? produtosApi : produtos;
+  const produtosBaseCompletos = produtosApi.length > 0 ? produtosApi : produtos;
+  const termoNormalizado = termoBusca.trim().toLowerCase();
+  const produtosBase = termoNormalizado
+    ? produtosBaseCompletos.filter((produto) =>
+        `${produto.nome} ${produto.categoria} ${produto.descricao || ""}`
+          .toLowerCase()
+          .includes(termoNormalizado),
+      )
+    : produtosBaseCompletos;
   const quantidadeVisivel = Math.min(4, produtosBase.length);
   const produtosVisiveis = Array.from(
     { length: quantidadeVisivel },
@@ -209,6 +223,8 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
         onNavigate={onNavigate}
         cartCount={cartCount}
         onLogout={onLogout}
+        searchValue={termoBusca}
+        onSearchChange={setTermoBusca}
       />
 
       <main className="container">
@@ -309,7 +325,8 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
                 aria-label="Produto anterior"
                 onClick={() =>
                   setIndiceProdutos(
-                    (atual) => (atual - 1 + produtos.length) % produtos.length,
+                    (atual) =>
+                      (atual - 1 + produtosBase.length) % produtosBase.length,
                   )
                 }
               >
@@ -323,7 +340,9 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
                 className="carousel-btn"
                 aria-label="Próximo produto"
                 onClick={() =>
-                  setIndiceProdutos((atual) => (atual + 1) % produtos.length)
+                  setIndiceProdutos((atual) =>
+                    produtosBase.length ? (atual + 1) % produtosBase.length : 0,
+                  )
                 }
               >
                 →
@@ -332,6 +351,11 @@ function HomePage({ onNavigate, cartCount, onAddToCart, onLogout }) {
           </div>
 
           <div className="product-grid">
+            {produtosVisiveis.length === 0 && (
+              <p className="search-empty">
+                Nenhum produto encontrado para “{termoBusca}”.
+              </p>
+            )}
             {produtosVisiveis.map((produto) => (
               <ProductCard
                 key={`${produto.id}-${produto.nome}`}
