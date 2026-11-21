@@ -1,10 +1,40 @@
 import { useState } from "react";
 import Button from "../components/Button";
+import { register } from "../services/auth";
 import "./AuthPages.css";
 
 function RegisterPage({ onNavigate }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [role, setRole] = useState("customer");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+
+    if (password !== confirmPassword) {
+      setError("As senhas não conferem.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const data = await register({ name, email, password, role });
+      localStorage.setItem("appsoft_token", data.token);
+      localStorage.setItem("appsoft_user", JSON.stringify(data.user));
+      onNavigate(data.user.role === "vendor" ? "vendor-dashboard" : "home");
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="auth-page">
@@ -22,15 +52,25 @@ function RegisterPage({ onNavigate }) {
         <h1>Criar conta</h1>
         <p>Cadastre-se e aproveite ofertas exclusivas.</p>
 
-        <form className="auth-form">
+        <form className="auth-form" onSubmit={handleSubmit}>
           <label className="field-group">
             <span>Nome completo</span>
-            <input type="text" value="Maria Silva" readOnly />
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           </label>
 
           <label className="field-group">
             <span>E-mail</span>
-            <input type="email" value="maria@appsoft.com" readOnly />
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
           </label>
 
           <label className="field-group">
@@ -38,8 +78,9 @@ function RegisterPage({ onNavigate }) {
             <div className="password-wrap">
               <input
                 type={showPassword ? "text" : "password"}
-                value="123456"
-                readOnly
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
               />
               <button
                 type="button"
@@ -56,8 +97,9 @@ function RegisterPage({ onNavigate }) {
             <div className="password-wrap">
               <input
                 type={showConfirmPassword ? "text" : "password"}
-                value="123456"
-                readOnly
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
               />
               <button
                 type="button"
@@ -69,12 +111,27 @@ function RegisterPage({ onNavigate }) {
             </div>
           </label>
 
+          <label className="field-group">
+            <span>Tipo de conta</span>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              required
+            >
+              <option value="customer">Cliente</option>
+              <option value="vendor">Vendedor</option>
+            </select>
+          </label>
+
+          {error && <p className="error-message">{error}</p>}
+
           <Button
             variant="primary"
-            type="button"
-            onClick={() => onNavigate("home")}
+            type="submit"
+            loading={loading}
+            disabled={loading}
           >
-            Cadastrar
+            {loading ? "Aguarde..." : "Cadastrar"}
           </Button>
         </form>
 

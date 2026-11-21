@@ -1,9 +1,31 @@
 import { useState } from "react";
 import Button from "../components/Button";
+import { login } from "../services/auth";
 import "./AuthPages.css";
 
 function LoginPage({ onNavigate }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("cliente@appsoft.com");
+  const [password, setPassword] = useState("123456");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setError("");
+    setLoading(true);
+
+    try {
+      const data = await login(email, password);
+      localStorage.setItem("appsoft_token", data.token);
+      localStorage.setItem("appsoft_user", JSON.stringify(data.user));
+      onNavigate(data.user.role === "vendor" ? "vendor-dashboard" : "home");
+    } catch (requestError) {
+      setError(requestError.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="auth-page">
@@ -21,10 +43,15 @@ function LoginPage({ onNavigate }) {
         <h1>Entrar</h1>
         <p>Bem-vindo de volta ao AppSoft.</p>
 
-        <form className="auth-form">
+        <form className="auth-form" onSubmit={handleSubmit}>
           <label className="field-group">
             <span>E-mail</span>
-            <input type="email" value="cliente@appsoft.com" readOnly />
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
           </label>
 
           <label className="field-group">
@@ -32,8 +59,9 @@ function LoginPage({ onNavigate }) {
             <div className="password-wrap">
               <input
                 type={showPassword ? "text" : "password"}
-                value="123456"
-                readOnly
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
               />
               <button
                 type="button"
@@ -44,6 +72,8 @@ function LoginPage({ onNavigate }) {
               </button>
             </div>
           </label>
+
+          {error && <p className="auth-error">{error}</p>}
 
           <div className="auth-row">
             <label className="checkbox">
@@ -62,10 +92,11 @@ function LoginPage({ onNavigate }) {
 
           <Button
             variant="primary"
-            type="button"
-            onClick={() => onNavigate("home")}
+            type="submit"
+            loading={loading}
+            disabled={loading}
           >
-            Entrar
+            {loading ? "Entrando..." : "Entrar"}
           </Button>
         </form>
 

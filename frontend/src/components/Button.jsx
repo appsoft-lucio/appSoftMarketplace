@@ -4,12 +4,14 @@ function Button({
   type = "button",
   className = "",
   onClick,
+  disabled = false,
 }) {
   return (
     <button
       type={type}
       className={`btn btn-${variant} ${className}`.trim()}
       onClick={onClick}
+      disabled={disabled}
     >
       {children}
     </button>
