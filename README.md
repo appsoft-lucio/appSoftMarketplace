@@ -1,4 +1,4 @@
-﻿# AppSoft Marketplace
+# AppSoft Marketplace
 
 Nova base local em React + Vite + TypeScript, API Node.js e modelo PostgreSQL.
 Esta versão substitui o código antigo; as imagens originais estão em `imagens/`.
@@ -39,11 +39,15 @@ npm run build
 
 ## Estado desta entrega
 
-Estrutura executável, TypeScript estrito, regras iniciais e modelo SQL testável.
-Login, autorização das rotas comerciais, CRUD, checkout, assinatura e pagamentos ainda não estão implementados.
-A API de saúde não verifica banco de dados. Não há banco real conectado, migração aplicada ou novo deploy.
-Não use esta base para receber pagamentos ou publicar uma operação comercial ainda.
-O aplicativo antigo na Vercel e os dados antigos no Supabase não foram alterados.
+Base TypeScript com telas de cadastro, login, confirmação de e-mail, recuperação
+ e redefinição de senha integradas ao SDK do Supabase. Para ativar, configure as
+variáveis públicas e as URLs no provedor conforme [autenticação](docs/autenticacao.md).
+Sem configuração, os formulários permanecem bloqueados.
+
+A conta é criada no Supabase Auth. Sincronização com o banco do marketplace,
+autorização das rotas comerciais, CRUD, checkout, assinatura e pagamentos ainda
+serão implementados. A API de saúde não verifica banco de dados. Nenhuma migração
+foi aplicada ao banco real. Não receba pagamentos nesta etapa.
 
 ## Referências
 

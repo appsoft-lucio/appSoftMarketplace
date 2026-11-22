@@ -3,5 +3,14 @@
   "framework": null,
   "installCommand": "npm ci --include=dev",
   "buildCommand": "npm run build",
-  "outputDirectory": "apps/web/dist"
+  "outputDirectory": "apps/web/dist",
+  "rewrites": [
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/cadastro", "destination": "/index.html" },
+    { "source": "/recuperar-senha", "destination": "/index.html" },
+    { "source": "/redefinir-senha", "destination": "/index.html" },
+    { "source": "/confirmar-email", "destination": "/index.html" },
+    { "source": "/auth/confirmar", "destination": "/index.html" },
+    { "source": "/minha-conta", "destination": "/index.html" }
+  ]
 }
