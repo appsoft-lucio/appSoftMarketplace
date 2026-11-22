@@ -1,4 +1,4 @@
-﻿# Cadastro, login e recuperação de senha
+# Cadastro, login e recuperação de senha
 
 ## O que esta entrega implementa
 
@@ -84,8 +84,8 @@ Nunca salve links de recuperação, senhas de teste, tokens ou capturas de sess�
 
 ## Limites de autorização e persistência
 
-Nesta fase, a conta é criada no Supabase Auth. Ainda não há sincronização para
-`marketplace_v2.users`, cadastro de loja ou permissões comerciais na API.
+A conta é criada no Supabase Auth. Ao cadastrar uma loja, a API valida a sessão
+e sincroniza o usuário em `marketplace_v2.users`, conforme [cadastro de lojas](lojas.md).
 A preferência `account_type` e o nome em user_metadata são editáveis pelo usuário;
 nunca podem ser usados como autorização de administrador ou proprietário de loja.
 

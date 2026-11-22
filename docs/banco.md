@@ -1,7 +1,7 @@
-﻿# Modelo PostgreSQL
+# Modelo PostgreSQL
 
 Arquivo: `database/migrations/001_initial.sql`. Schema novo: `marketplace_v2`.
-Não executado em banco real. O schema antigo `appsoft` não é referenciado nem modificado.
+As migrações 001 e 002 foram aplicadas ao projeto Supabase novo. O schema antigo `appsoft` não é referenciado nem modificado.
 A migração falha se `marketplace_v2` já existir; ela não apaga nem reaproveita dados existentes.
 
 ## Grupos de tabelas
@@ -42,5 +42,5 @@ O SQL é a fundação, não um checkout completo. Antes de compras reais, implem
 - renovação idempotente e aplicação de períodos pagos;
 - credencial restrita de aplicação, políticas de acesso e testes contra PostgreSQL real.
 
-Não há comando automático de migração nesta etapa para evitar executar o modelo no banco antigo.
+O comando manual de migração está documentado em [lojas](lojas.md). Só deve ser executado após conferir o banco de destino.
 Os testes usam um PostgreSQL temporário local em memória, sem credenciais.

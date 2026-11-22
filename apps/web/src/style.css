@@ -68,3 +68,28 @@ dt { color: #667085; font-size: .875rem; }
 dd { margin: 0; overflow-wrap: anywhere; }
 @media(max-width: 800px) { .auth-shell { grid-template-columns: 1fr; gap: 0; padding: 0; } .auth-brand { border-radius: 0; padding: 24px; min-height: auto; border: 0; } .auth-brand img { width: 145px; max-height: 58px; } .auth-brand > div, .auth-brand > small { display: none; } .auth-panel { justify-self: center; padding: 28px 24px 48px; } .auth-heading { margin-top: 28px; } }
 @media(max-width: 480px) { .site-shell { padding: 0 20px; } .site-header { flex-wrap: wrap; padding: 20px 0; } .site-header img { width: 140px; } .site-header nav { gap: 8px; } .site-header .button { padding: 9px 12px; font-size: .875rem; } .home-content { padding-top: 48px; } .account-content h1 { font-size: 2rem; } dl div { grid-template-columns: 1fr; gap: 4px; } }.field-group { display: flex; flex-direction: column; gap: 7px; } .field-group > small { font-size: .8125rem; color: #667085; }
+.store-content { margin: 40px 0 64px; }
+.store-heading { margin: 24px 0; }
+.store-heading h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); margin: 12px 0; }
+.store-registration { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(250px, 1fr); gap: 32px; align-items: start; }
+.store-registration .account-card { margin-top: 0; }
+.auth-form textarea { width: 100%; border: 1px solid #c9d0da; border-radius: 8px; padding: 12px; font: inherit; font-weight: 400; resize: vertical; min-height: 100px; color: #202735; }
+.store-form-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 16px; }
+.store-info { padding: 20px 0; }
+.store-info h2 { font-size: 1.2rem; }
+.store-info ol { padding-left: 22px; color: #596273; }
+.store-info li { margin-bottom: 14px; }
+.store-info .notice { margin-top: 24px; }
+.store-list-heading { display: flex; justify-content: space-between; align-items: center; gap: 20px; }
+.store-cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.store-cards .account-card { margin: 0; }
+.store-cards h2 { margin-top: 18px; }
+.store-cards dl { margin-top: 20px; }
+.store-cards dd { overflow-wrap: anywhere; }
+.store-status { display: inline-block; background: #fff1d9; color: #815417; border-radius: 6px; padding: 5px 10px; font-size: .8125rem; font-weight: 650; }
+.store-status.approved { background: #e9f5ef; color: #246247; }
+.store-status.suspended { background: #fff0ee; color: #9f3333; }
+.store-note { font-size: .875rem; padding-top: 18px; }
+.empty-store p { margin-bottom: 20px; }
+@media(max-width: 800px) { .store-registration, .store-cards { grid-template-columns: 1fr; } .store-info { padding: 0; } }
+@media(max-width: 480px) { .store-form-row { grid-template-columns: 1fr; } .store-list-heading { flex-direction: column; align-items: flex-start; margin-bottom: 24px; } }

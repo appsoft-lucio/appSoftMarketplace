@@ -1,16 +1,55 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "framework": null,
-  "installCommand": "npm ci --include=dev",
-  "buildCommand": "npm run build",
-  "outputDirectory": "apps/web/dist",
-  "rewrites": [
-    { "source": "/login", "destination": "/index.html" },
-    { "source": "/cadastro", "destination": "/index.html" },
-    { "source": "/recuperar-senha", "destination": "/index.html" },
-    { "source": "/redefinir-senha", "destination": "/index.html" },
-    { "source": "/confirmar-email", "destination": "/index.html" },
-    { "source": "/auth/confirmar", "destination": "/index.html" },
-    { "source": "/minha-conta", "destination": "/index.html" }
-  ]
+    "$schema":  "https://openapi.vercel.sh/vercel.json",
+    "framework":  null,
+    "installCommand":  "npm ci --include=dev",
+    "buildCommand":  "npm run build",
+    "outputDirectory":  "apps/web/dist",
+    "rewrites":  [
+                     {
+                         "destination":  "/api",
+                         "source":  "/api/:path*"
+                     },
+                     {
+                         "source":  "/login",
+                         "destination":  "/index.html"
+                     },
+                     {
+                         "source":  "/cadastro",
+                         "destination":  "/index.html"
+                     },
+                     {
+                         "source":  "/recuperar-senha",
+                         "destination":  "/index.html"
+                     },
+                     {
+                         "source":  "/redefinir-senha",
+                         "destination":  "/index.html"
+                     },
+                     {
+                         "source":  "/confirmar-email",
+                         "destination":  "/index.html"
+                     },
+                     {
+                         "source":  "/auth/confirmar",
+                         "destination":  "/index.html"
+                     },
+                     {
+                         "source":  "/minha-conta",
+                         "destination":  "/index.html"
+                     },
+                     {
+                         "destination":  "/index.html",
+                         "source":  "/lojas"
+                     },
+                     {
+                         "destination":  "/index.html",
+                         "source":  "/lojas/nova"
+                     }
+                 ],
+    "functions":  {
+                      "api/index.ts":  {
+                                           "maxDuration":  30,
+                                           "includeFiles":  "apps/api/certs/**"
+                                       }
+                  }
 }

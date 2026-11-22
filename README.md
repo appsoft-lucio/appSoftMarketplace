@@ -44,10 +44,11 @@ Base TypeScript com telas de cadastro, login, confirmação de e-mail, recupera�
 variáveis públicas e as URLs no provedor conforme [autenticação](docs/autenticacao.md).
 Sem configuração, os formulários permanecem bloqueados.
 
-A conta é criada no Supabase Auth. Sincronização com o banco do marketplace,
+A conta é criada no Supabase Auth. O cadastro de lojas está implementado e documentado em [lojas](docs/lojas.md). A gravação real depende da configuração do backend e da aplicação explícita das migrações.
+
+Outros recursos, como
 autorização das rotas comerciais, CRUD, checkout, assinatura e pagamentos ainda
-serão implementados. A API de saúde não verifica banco de dados. Nenhuma migração
-foi aplicada ao banco real. Não receba pagamentos nesta etapa.
+serão implementados. A API de saúde não verifica banco de dados. As migrações 001 e 002 foram aplicadas ao projeto Supabase novo. Não receba pagamentos nesta etapa.
 
 ## Referências
 

@@ -71,7 +71,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
       <button className="button primary full" type="submit">{busy ? "Aguarde…" : button}</button>
     </fieldset></form>}
     <div className="auth-links">{mode === "login" ? <><p>Ainda não tem conta? <Link to="/cadastro">Cadastre-se</Link></p><Link to="/confirmar-email">Reenviar confirmação de e-mail</Link></> : <p>Já tem conta? <Link to="/login">Entrar</Link></p>}</div>
-    {mode === "register" && <p className="fine-print">A escolha de lojista não ativa uma loja nem inicia uma cobrança. O cadastro da loja será feito em uma próxima etapa.</p>}
+    {mode === "register" && <p className="fine-print">A escolha de lojista não ativa uma loja nem inicia uma cobrança. Após entrar, você poderá enviar o cadastro da loja para análise.</p>}
   </AuthLayout>;
 }
 
