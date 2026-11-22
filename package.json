@@ -13,9 +13,9 @@
     "scripts":  {
                     "dev":  "npm run dev --workspace @appsoft/web",
                     "dev:api":  "npm run dev --workspace @appsoft/api",
-                    "build":  "npm run typecheck \u0026\u0026 npm run build --workspace @appsoft/web",
+                    "build":  "npm run build --workspace @appsoft/domain \u0026\u0026 npm run typecheck \u0026\u0026 npm run build --workspace @appsoft/web",
                     "typecheck":  "tsc --noEmit",
-                    "test":  "tsx --test packages/domain/test/*.test.ts apps/api/test/*.test.ts database/test/*.test.ts \u0026\u0026 npm run test --workspace @appsoft/web"
+                    "test":  "npm run build --workspace @appsoft/domain \u0026\u0026 tsx --test packages/domain/test/*.test.ts apps/api/test/*.test.ts database/test/*.test.ts \u0026\u0026 npm run test --workspace @appsoft/web"
                 },
     "devDependencies":  {
                             "@electric-sql/pglite":  "0.5.17",
