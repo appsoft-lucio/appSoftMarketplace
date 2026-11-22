@@ -15,7 +15,11 @@
                     "./admin":  {
                                     "types":  "./src/admin.ts",
                                     "default":  "./dist/admin.js"
-                                }
+                                },
+                    "./catalog":  {
+                                      "types":  "./src/catalog.ts",
+                                      "default":  "./dist/catalog.js"
+                                  }
                 },
     "scripts":  {
                     "build":  "tsc -p tsconfig.build.json"

@@ -48,6 +48,8 @@ A conta é criada no Supabase Auth. O cadastro de lojas está implementado e doc
 
 O [painel administrativo](docs/admin.md) permite analisar, aprovar e suspender lojas. A migração 003 e o acesso inicial da conta Teste 01 já foram aplicados.
 
+O [catálogo com filtros](docs/catalogo.md) está em /catalogo, com categorias laterais, subcategorias, preço, tamanhos e lojas.
+
 Outros recursos, como
 gestão de produtos, checkout, assinatura e pagamentos ainda
 serão implementados. A API de saúde não verifica banco de dados. As migrações 001, 002 e 003 foram aplicadas ao projeto Supabase novo. Não receba pagamentos nesta etapa.

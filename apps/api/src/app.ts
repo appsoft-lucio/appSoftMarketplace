@@ -1,4 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { catalogService } from "./catalog/service.ts";
+import { parseCatalogQuery } from "@appsoft/domain/catalog";
 import { verifyUser, HttpError } from "./auth.ts";
 import { storeService } from "./stores/service.ts";
 import { adminService } from "./admin/service.ts";
@@ -6,7 +8,7 @@ import { validateStore } from "@appsoft/domain/stores";
 import { validateStoreReview } from "@appsoft/domain/admin";
 import type { AdminStoreQuery } from "@appsoft/domain/admin";
 
-type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService };
+type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService };
 function json(response: ServerResponse, status: number, body: unknown) {
   response.writeHead(status);
   response.end(JSON.stringify(body));
@@ -42,6 +44,12 @@ export function createApp(dependencies: Dependencies = { verifyUser, stores: sto
       const path = url.pathname;
       if (request.method === "GET" && path === "/api/health") {
         json(response, 200, { status: "ok", service: "appsoft-api", database: process.env.DATABASE_URL ? "configured" : "not-configured" }); return;
+      }
+      if (path === "/api/catalog") {
+        if (request.method !== "GET") { response.setHeader("Allow", "GET"); json(response, 405, { message: "Método não permitido." }); return; }
+        let query;
+        try { query = parseCatalogQuery(url.searchParams); } catch (error) { throw new HttpError(400, (error as Error).message); }
+        json(response, 200, await (dependencies.catalog || catalogService).list(query)); return;
       }
       const adminAction = path.match(/^\/api\/admin\/stores\/([^/]+)\/(status|history)$/);
       const isList = path === "/api/admin/stores";
