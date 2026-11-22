@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { BASIC_PLAN, formatMoney } from "@appsoft/domain";
 import { useAuth } from "./auth/AuthProvider";
@@ -6,6 +6,8 @@ import { getAuthClient } from "./auth/client";
 import { authErrorMessage } from "./auth/errors";
 import { AuthPage, ConfirmEmailPage, ResetPasswordPage } from "./pages/AuthPages";
 import { MyStoresPage, StoreRegistrationPage } from "./pages/StorePages";
+import { AdminAccessLink } from "./components/AdminAccessLink";
+const AdminPage = lazy(() => import("./pages/AdminPage"));
 import logo from "../../../imagens/logo-appsoft-orange-semFundo.png";
 
 function HomePage() {
@@ -28,7 +30,7 @@ function AccountPage() {
     try { const { error } = await getAuthClient().auth.signOut({ scope: "local" }); if (error) throw error; }
     catch (err) { setError(authErrorMessage(err)); } finally { setBusy(false); }
   };
-  return <div className="site-shell"><header className="site-header"><Link to="/"><img src={logo} alt="AppSoft, início" /></Link><button className="button secondary" onClick={logout} disabled={busy}>{busy ? "Saindo…" : "Sair da conta"}</button></header><main className="account-content"><p className="eyebrow">MINHA CONTA</p><h1>Olá, {name}.</h1><p>Seu acesso ao AppSoft está pronto.</p>{error && <p className="notice error" role="alert">{error}</p>}<section className="account-card"><h2>Seus dados</h2><dl><div><dt>Nome</dt><dd>{name}</dd></div><div><dt>E-mail</dt><dd>{session.user.email}</dd></div></dl></section><section className="account-card"><h2>Sua loja no AppSoft</h2><p>Envie o cadastro da sua loja para análise e acompanhe o andamento. Nenhuma assinatura será contratada nesta etapa.</p><Link className="button primary" to="/lojas">Minhas lojas</Link><br /><Link to="/recuperar-senha">Solicitar redefinição de senha</Link></section><Link className="back-link" to="/">Voltar ao início</Link></main></div>;
+  return <div className="site-shell"><header className="site-header"><Link to="/"><img src={logo} alt="AppSoft, início" /></Link><button className="button secondary" onClick={logout} disabled={busy}>{busy ? "Saindo…" : "Sair da conta"}</button></header><main className="account-content"><p className="eyebrow">MINHA CONTA</p><h1>Olá, {name}.</h1><p>Seu acesso ao AppSoft está pronto.</p>{error && <p className="notice error" role="alert">{error}</p>}<section className="account-card"><h2>Seus dados</h2><dl><div><dt>Nome</dt><dd>{name}</dd></div><div><dt>E-mail</dt><dd>{session.user.email}</dd></div></dl></section><AdminAccessLink /><section className="account-card"><h2>Sua loja no AppSoft</h2><p>Envie o cadastro da sua loja para análise e acompanhe o andamento. Nenhuma assinatura será contratada nesta etapa.</p><Link className="button primary" to="/lojas">Minhas lojas</Link><br /><Link to="/recuperar-senha">Solicitar redefinição de senha</Link></section><Link className="back-link" to="/">Voltar ao início</Link></main></div>;
 }
 
 export default function App() {
@@ -44,6 +46,7 @@ export default function App() {
     <Route path="/confirmar-email" element={<AuthPage key="resend" mode="resend" />} />
     <Route path="/redefinir-senha" element={<ResetPasswordPage />} />
     <Route path="/auth/confirmar" element={<ConfirmEmailPage />} />
+    <Route path="/admin" element={<Suspense fallback={<main className="loading-screen" role="status">Carregando administração…</main>}><AdminPage /></Suspense>} />
     <Route path="/lojas" element={<MyStoresPage />} />
     <Route path="/lojas/nova" element={<StoreRegistrationPage />} />
     <Route path="/minha-conta" element={<AccountPage />} />

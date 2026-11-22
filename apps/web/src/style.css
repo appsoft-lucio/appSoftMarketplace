@@ -93,3 +93,27 @@ dd { margin: 0; overflow-wrap: anywhere; }
 .empty-store p { margin-bottom: 20px; }
 @media(max-width: 800px) { .store-registration, .store-cards { grid-template-columns: 1fr; } .store-info { padding: 0; } }
 @media(max-width: 480px) { .store-form-row { grid-template-columns: 1fr; } .store-list-heading { flex-direction: column; align-items: flex-start; margin-bottom: 24px; } }
+.admin-metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 24px 0; }
+.admin-metrics article { border: 1px solid #e0e4ea; border-radius: 12px; padding: 22px; background: white; }
+.admin-metrics strong { display: block; font-size: 2rem; margin-top: 8px; }
+.admin-filters { display: flex; align-items: end; gap: 16px; margin-bottom: 24px; }
+.admin-filters label { display: flex; flex-direction: column; gap: 7px; font-size: .875rem; font-weight: 600; flex: 1; }
+.admin-filters input, .admin-filters select { width: 100%; min-width: 0; border: 1px solid #c9d0da; border-radius: 8px; padding: 11px 12px; background: white; color: #202735; }
+.admin-store-list article { display: flex; align-items: center; gap: 20px; padding: 22px 0; border-top: 1px solid #e2e6ec; }
+.admin-store-list article > div { flex: 1; min-width: 0; }
+.admin-store-list h2 { font-size: 1.1rem; margin-bottom: 6px; overflow-wrap: anywhere; }
+.admin-store-list p, .admin-store-list small { color: #667085; font-size: .875rem; }
+.admin-pagination { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 24px; font-size: .875rem; }
+.admin-dialog { width: min(660px, calc(100vw - 32px)); max-height: 88vh; padding: 28px; border: 1px solid #dce1e8; border-radius: 16px; color: #202735; }
+.admin-dialog::backdrop { background: rgb(16 24 40 / .5); }
+.admin-dialog-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.admin-dialog-heading h2 { margin-top: 8px; overflow-wrap: anywhere; }
+.admin-description { margin: 20px 0; white-space: pre-wrap; overflow-wrap: anywhere; }
+.admin-owners, .admin-decision, .admin-history { padding: 24px 0 0; margin-top: 16px; border-top: 1px solid #e0e4ea; }
+.admin-dialog h3 { font-size: 1rem; margin: 0 0 16px; }
+.admin-owners p { margin-bottom: 12px; overflow-wrap: anywhere; }
+.admin-history ol { list-style: none; padding: 0; }
+.admin-history li { border-left: 3px solid #dce1e8; padding: 0 0 18px 14px; font-size: .875rem; }
+.admin-history li p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.button.danger { color: white; background: #a22f2f; }
+@media(max-width: 650px) { .admin-metrics { grid-template-columns: 1fr; gap: 12px; } .admin-filters { flex-direction: column; align-items: stretch; } .admin-store-list article { flex-wrap: wrap; gap: 12px; } .admin-store-list article > div { flex-basis: 100%; } .admin-store-list article > button { margin-left: auto; } .admin-dialog { padding: 20px; } }

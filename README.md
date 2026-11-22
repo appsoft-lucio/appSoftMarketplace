@@ -46,9 +46,11 @@ Sem configuração, os formulários permanecem bloqueados.
 
 A conta é criada no Supabase Auth. O cadastro de lojas está implementado e documentado em [lojas](docs/lojas.md). A gravação real depende da configuração do backend e da aplicação explícita das migrações.
 
+O [painel administrativo](docs/admin.md) permite analisar, aprovar e suspender lojas. A migração 003 e o acesso inicial da conta Teste 01 já foram aplicados.
+
 Outros recursos, como
-autorização das rotas comerciais, CRUD, checkout, assinatura e pagamentos ainda
-serão implementados. A API de saúde não verifica banco de dados. As migrações 001 e 002 foram aplicadas ao projeto Supabase novo. Não receba pagamentos nesta etapa.
+gestão de produtos, checkout, assinatura e pagamentos ainda
+serão implementados. A API de saúde não verifica banco de dados. As migrações 001, 002 e 003 foram aplicadas ao projeto Supabase novo. Não receba pagamentos nesta etapa.
 
 ## Referências
 

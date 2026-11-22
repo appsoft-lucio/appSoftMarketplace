@@ -27,6 +27,7 @@ vi.mock("../src/auth/client", () => ({
     signOut: fake.signOut, resend: fake.resend,
   } }),
 }));
+vi.mock("../src/stores/admin-service", () => ({ adminService: { profile: async () => ({ role: "customer" }) } }));
 const session = { user: { id: "user-1", email: "ana@example.test", user_metadata: { name: "Ana", account_type: "seller" } } };
 function open(path: string) {
   window.history.replaceState(null, "", path);

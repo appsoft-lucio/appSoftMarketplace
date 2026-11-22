@@ -11,7 +11,11 @@
                     "./stores":  {
                                      "types":  "./src/stores.ts",
                                      "default":  "./dist/stores.js"
-                                 }
+                                 },
+                    "./admin":  {
+                                    "types":  "./src/admin.ts",
+                                    "default":  "./dist/admin.js"
+                                }
                 },
     "scripts":  {
                     "build":  "tsc -p tsconfig.build.json"
