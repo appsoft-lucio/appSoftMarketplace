@@ -54,6 +54,10 @@ Outros recursos, como
 gestão de produtos, checkout, assinatura e pagamentos ainda
 serão implementados. A API de saúde não verifica banco de dados. As migrações 001, 002 e 003 foram aplicadas ao projeto Supabase novo. Não receba pagamentos nesta etapa.
 
+## Estilos
+
+Tema, tipografia e medidas ficam em `apps/web/src/styles`. Páginas e componentes têm CSS próprio. Consulte [organização dos estilos](docs/estilos.md).
+
 ## Referências
 
 - Vite: https://vite.dev/guide/

@@ -1,0 +1,16 @@
+.account-content {
+  max-width: 760px;
+  margin: var(--space-56) 0;
+}
+
+.account-content h1 {
+  font-size: var(--font-size-3xl);
+  margin: var(--space-12) 0 18px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+  .account-content h1 {
+    font-size: var(--font-size-2xl);
+  }
+}

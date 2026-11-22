@@ -1,3 +1,4 @@
+import "./AuthPages.css";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
@@ -62,7 +63,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
     {!authConfigured && <p className="notice warning" role="status">O acesso está sendo preparado. Cadastros e recuperação de senha estarão disponíveis em breve.</p>}
     {error && <p className="notice error" role="alert">{error}</p>}
     {message && <div className="notice success" role="status">{message}</div>}
-    {message ? <div className="auth-links"><Link to="/login">Voltar para entrar</Link><button className="text-button" onClick={() => setMessage("")}>Usar outro e-mail</button></div> : <form onSubmit={submit} className="auth-form"><fieldset disabled={busy || !authConfigured || loading}>
+    {message ? <div className="auth-links"><Link to="/login">Voltar para entrar</Link><button className="text-button" onClick={() => setMessage("")}>Usar outro e-mail</button></div> : <form onSubmit={submit} className="form"><fieldset disabled={busy || !authConfigured || loading}>
       {mode === "register" && <><label>Seu nome<input name="name" autoComplete="name" maxLength={100} required /></label><label>Como quer começar?<select name="accountType" defaultValue="customer"><option value="customer">Quero comprar</option><option value="seller">Quero vender</option></select></label></>}
       <label>E-mail<input name="email" type="email" autoComplete="email" maxLength={254} required placeholder="voce@exemplo.com" /></label>
       {(mode === "login" || mode === "register") && <PasswordField strong={mode === "register"} autoComplete={mode === "register" ? "new-password" : "current-password"} />}
@@ -97,7 +98,7 @@ export function ResetPasswordPage() {
     } catch (err) { setError(authErrorMessage(err)); } finally { setBusy(false); }
   };
   return <AuthLayout title="Escolha uma nova senha" description="Use uma senha diferente, que você não utiliza em outros sites.">
-    {done ? <><p className="notice success" role="status">Senha atualizada com sucesso. Você já pode entrar com a nova senha.</p><Link className="button primary" to="/login">Entrar</Link></> : loading ? <p role="status">Validando seu link…</p> : !session || !recovery || linkError ? <><p className="notice warning" role="alert">O link é inválido, expirou ou foi aberto em outro navegador. Solicite um novo e abra no mesmo navegador em que fez a solicitação.</p><Link className="button primary" to="/recuperar-senha">Solicitar novo link</Link></> : <form onSubmit={submit} className="auth-form">{error && <p className="notice error" role="alert">{error}</p>}<fieldset disabled={busy}><PasswordField label="Nova senha" strong autoComplete="new-password" /><PasswordField label="Confirme a nova senha" name="confirmPassword" autoComplete="new-password" /><button className="button primary full" type="submit">{busy ? "Salvando…" : "Salvar nova senha"}</button></fieldset></form>}
+    {done ? <><p className="notice success" role="status">Senha atualizada com sucesso. Você já pode entrar com a nova senha.</p><Link className="button primary" to="/login">Entrar</Link></> : loading ? <p role="status">Validando seu link…</p> : !session || !recovery || linkError ? <><p className="notice warning" role="alert">O link é inválido, expirou ou foi aberto em outro navegador. Solicite um novo e abra no mesmo navegador em que fez a solicitação.</p><Link className="button primary" to="/recuperar-senha">Solicitar novo link</Link></> : <form onSubmit={submit} className="form">{error && <p className="notice error" role="alert">{error}</p>}<fieldset disabled={busy}><PasswordField label="Nova senha" strong autoComplete="new-password" /><PasswordField label="Confirme a nova senha" name="confirmPassword" autoComplete="new-password" /><button className="button primary full" type="submit">{busy ? "Salvando…" : "Salvar nova senha"}</button></fieldset></form>}
   </AuthLayout>;
 }
 

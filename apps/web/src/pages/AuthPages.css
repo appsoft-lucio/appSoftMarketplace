@@ -1,0 +1,17 @@
+.forgot-link {
+  font-size: var(--font-size-sm);
+  align-self: flex-end;
+  margin-top: -var(--space-4);
+}
+
+.auth-links {
+  margin-top: var(--space-24);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  display: grid;
+  gap: var(--space-16);
+}
+
+.auth-links a {
+  font-weight: var(--font-weight-semibold);
+}

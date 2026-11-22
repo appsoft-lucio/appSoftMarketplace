@@ -1,0 +1,22 @@
+:root {
+  font-family: var(--font-family-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+h1, h2, h3 {
+  font-family: var(--font-family-heading);
+}
+
+h1, p {
+  margin: 0;
+}
+
+h1 {
+  line-height: var(--line-height-heading);
+  letter-spacing: var(--tracking-heading);
+}
+
+p {
+  color: var(--color-text-muted);
+}
