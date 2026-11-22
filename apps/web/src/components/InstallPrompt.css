@@ -1,0 +1,11 @@
+.install-prompt {
+  margin: var(--space-24) 0;
+  padding: var(--space-24);
+  border: 1px solid var(--color-brand-border);
+  border-radius: var(--radius-14);
+  background: var(--color-brand-surface);
+  color: var(--color-text);
+}
+.install-prompt h2 { font-size: var(--font-size-xl); margin-top: 0; }
+.install-prompt p { color: var(--color-text-muted); }
+.install-actions { display: flex; flex-wrap: wrap; gap: var(--space-12); }
