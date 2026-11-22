@@ -1,4 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
+import { publicService } from "./public/service.ts";
+import { parseCart } from "@appsoft/domain/cart";
 import { catalogService } from "./catalog/service.ts";
 import { parseCatalogQuery } from "@appsoft/domain/catalog";
 import { verifyUser, HttpError } from "./auth.ts";
@@ -8,7 +10,7 @@ import { validateStore } from "@appsoft/domain/stores";
 import { validateStoreReview } from "@appsoft/domain/admin";
 import type { AdminStoreQuery } from "@appsoft/domain/admin";
 
-type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService };
+type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService };
 function json(response: ServerResponse, status: number, body: unknown) {
   response.writeHead(status);
   response.end(JSON.stringify(body));
@@ -50,6 +52,35 @@ export function createApp(dependencies: Dependencies = { verifyUser, stores: sto
         let query;
         try { query = parseCatalogQuery(url.searchParams); } catch (error) { throw new HttpError(400, (error as Error).message); }
         json(response, 200, await (dependencies.catalog || catalogService).list(query)); return;
+      }
+      if (path.startsWith("/api/public/")) {
+        const service = dependencies.public || publicService;
+        const storeMatch = path.match(/^\/api\/public\/stores\/([a-z0-9]+(?:-[a-z0-9]+)*)$/);
+        const productMatch = path.match(/^\/api\/public\/products\/([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})$/i);
+        const quote = path === "/api/public/cart/quote";
+        if (!quote && path !== "/api/public/stores" && !storeMatch && !productMatch) { json(response, 404, { message: "Página não encontrada." }); return; }
+        const allowed = quote ? "POST" : "GET";
+        if (request.method !== allowed) { response.setHeader("Allow", allowed); json(response, 405, { message: "Método não permitido." }); return; }
+        if (quote) {
+          const body = await readBody(request);
+          let items;
+          try { items = parseCart(body); } catch (error) { throw new HttpError(400, (error as Error).message); }
+          json(response, 200, await service.quote(items)); return;
+        }
+        if (productMatch) {
+          const product = await service.product(productMatch[1]);
+          if (!product) throw new HttpError(404, "Produto não encontrado ou indisponível.");
+          json(response, 200, { product }); return;
+        }
+        if (storeMatch) {
+          const store = await service.store(storeMatch[1]);
+          if (!store) throw new HttpError(404, "Loja não encontrada ou indisponível.");
+          json(response, 200, { store }); return;
+        }
+        const search = (url.searchParams.get("q") || "").trim();
+        const page = Number(url.searchParams.get("page") || 1);
+        if (search.length > 100 || !Number.isInteger(page) || page < 1 || page > 100000) throw new HttpError(400, "Filtros inválidos.");
+        json(response, 200, await service.stores(search, page)); return;
       }
       const adminAction = path.match(/^\/api\/admin\/stores\/([^/]+)\/(status|history)$/);
       const isList = path === "/api/admin/stores";

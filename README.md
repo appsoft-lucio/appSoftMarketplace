@@ -56,6 +56,9 @@ serão implementados. A API de saúde não verifica banco de dados. As migraçõ
 
 ## Estilos
 
+Lojas, produtos e carrinho podem ser explorados sem conta. Consulte
+[navegação pública](docs/navegacao-publica.md) para as rotas e os limites desta etapa.
+
 Tema, tipografia e medidas ficam em `apps/web/src/styles`. Páginas e componentes têm CSS próprio. Consulte [organização dos estilos](docs/estilos.md).
 
 ## Referências

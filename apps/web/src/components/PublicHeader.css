@@ -1,0 +1,3 @@
+.site-header .public-navigation { flex-wrap: wrap; align-items: center; gap: var(--space-16); }
+.public-navigation > a:not(.button) { font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold); }
+@media (max-width: 650px) { .site-header .public-navigation { gap: var(--space-8); } }

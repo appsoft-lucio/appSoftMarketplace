@@ -3,6 +3,7 @@ import { Link, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthProvider";
 import { getAuthClient } from "../auth/client";
 import { authErrorMessage } from "../auth/errors";
+import { CartLink } from "../components/PublicHeader";
 import { AdminAccessLink } from "../components/AdminAccessLink";
 import logo from "../../../../imagens/logo-appsoft-orange-semFundo.png";
 import "./AccountPage.css";
@@ -21,5 +22,5 @@ export default function AccountPage() {
     try { const { error } = await getAuthClient().auth.signOut({ scope: "local" }); if (error) throw error; }
     catch (err) { setError(authErrorMessage(err)); } finally { setBusy(false); }
   };
-  return <div className="site-shell"><header className="site-header"><Link to="/"><img src={logo} alt="AppSoft, início" /></Link><button className="button secondary" onClick={logout} disabled={busy}>{busy ? "Saindo…" : "Sair da conta"}</button></header><main className="account-content"><p className="eyebrow">MINHA CONTA</p><h1>Olá, {name}.</h1><p>Seu acesso ao AppSoft está pronto.</p>{error && <p className="notice error" role="alert">{error}</p>}<section className="panel-card"><h2>Seus dados</h2><dl className="definition-list"><div><dt>Nome</dt><dd>{name}</dd></div><div><dt>E-mail</dt><dd>{session.user.email}</dd></div></dl></section><AdminAccessLink /><section className="panel-card"><h2>Sua loja no AppSoft</h2><p>Envie o cadastro da sua loja para análise e acompanhe o andamento. Nenhuma assinatura será contratada nesta etapa.</p><Link className="button primary" to="/lojas">Minhas lojas</Link><br /><Link to="/recuperar-senha">Solicitar redefinição de senha</Link></section><Link className="back-link" to="/">Voltar ao início</Link></main></div>;
+  return <div className="site-shell"><header className="site-header"><Link to="/"><img src={logo} alt="AppSoft, início" /></Link><CartLink /><button className="button secondary" onClick={logout} disabled={busy}>{busy ? "Saindo…" : "Sair da conta"}</button></header><main className="account-content"><p className="eyebrow">MINHA CONTA</p><h1>Olá, {name}.</h1><p>Seu acesso ao AppSoft está pronto.</p>{error && <p className="notice error" role="alert">{error}</p>}<section className="panel-card"><h2>Seus dados</h2><dl className="definition-list"><div><dt>Nome</dt><dd>{name}</dd></div><div><dt>E-mail</dt><dd>{session.user.email}</dd></div></dl></section><AdminAccessLink /><section className="panel-card"><h2>Sua loja no AppSoft</h2><p>Envie o cadastro da sua loja para análise e acompanhe o andamento. Nenhuma assinatura será contratada nesta etapa.</p><Link className="button primary" to="/minhas-lojas">Minhas lojas</Link><br /><Link to="/recuperar-senha">Solicitar redefinição de senha</Link></section><Link className="back-link" to="/">Voltar ao início</Link></main></div>;
 }

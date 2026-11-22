@@ -35,7 +35,7 @@ function open(path: string) {
 }
 beforeEach(() => {
   vi.resetAllMocks();
-  sessionStorage.clear();
+  sessionStorage.clear(); localStorage.clear();
   fake.configured = true; fake.initializationError = null; fake.session = null; fake.listener = null;
   fake.signUp.mockResolvedValue({ data: { session: null }, error: null });
   fake.resetPasswordForEmail.mockResolvedValue({ error: null });
@@ -155,4 +155,14 @@ describe("recuperação de senha", () => {
     open("/redefinir-senha");
     expect(await screen.findByLabelText("Nova senha", { exact: true })).toBeVisible();
   });
+});
+it("login retorna ao carrinho autenticado sem apagar os itens do visitante", async () => {
+  const items = [{ productId: "00000000-0000-4000-8000-000000000001", size: "P", quantity: 2 }];
+  localStorage.setItem("appsoft.cart.v1", JSON.stringify({ version: 1, items }));
+  const user = userEvent.setup(); open("/login?next=/finalizar-compra");
+  await user.type(await screen.findByLabelText("E-mail"), "ana@example.test");
+  await user.type(screen.getByLabelText("Senha", { exact: true }), "minha-senha-segura");
+  await user.click(screen.getByRole("button", { name: "Entrar" }));
+  expect(await screen.findByRole("heading", { name: "Você está conectado" })).toBeVisible();
+  expect(JSON.parse(localStorage.getItem("appsoft.cart.v1")!).items).toEqual(items);
 });

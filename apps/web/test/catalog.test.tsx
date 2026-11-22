@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
+import { CartProvider } from "../src/cart/CartProvider";
 import CatalogPage from "../src/pages/CatalogPage";
 const fake = vi.hoisted(() => ({ load: vi.fn() }));
 vi.mock("../src/auth/AuthProvider", () => ({ useAuth: () => ({ session: null }) }));
@@ -15,7 +16,7 @@ beforeEach(() => {
   HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
   HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
 });
-function open(query = "") { render(<MemoryRouter initialEntries={[`/catalogo${query}`]}><CatalogPage /></MemoryRouter>); }
+function open(query = "") { render(<MemoryRouter initialEntries={[`/catalogo${query}`]}><CartProvider><CatalogPage /></CartProvider></MemoryRouter>); }
 function lastParams() { return fake.load.mock.calls.at(-1)![0] as URLSearchParams; }
 it("expande subcategorias e combina categoria, tamanho e loja na URL", async () => {
   const user = userEvent.setup(); open();

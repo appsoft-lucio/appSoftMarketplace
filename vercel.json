@@ -52,6 +52,30 @@
                      {
                          "destination":  "/index.html",
                          "source":  "/catalogo"
+                     },
+                     {
+                         "destination":  "/index.html",
+                         "source":  "/minhas-lojas"
+                     },
+                     {
+                         "destination":  "/index.html",
+                         "source":  "/minhas-lojas/nova"
+                     },
+                     {
+                         "destination":  "/index.html",
+                         "source":  "/loja/:slug"
+                     },
+                     {
+                         "destination":  "/index.html",
+                         "source":  "/produto/:id"
+                     },
+                     {
+                         "destination":  "/index.html",
+                         "source":  "/carrinho"
+                     },
+                     {
+                         "destination":  "/index.html",
+                         "source":  "/finalizar-compra"
                      }
                  ],
     "functions":  {

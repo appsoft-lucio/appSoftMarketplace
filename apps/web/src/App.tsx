@@ -1,18 +1,22 @@
 import { lazy, Suspense } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { CartProvider } from "./cart/CartProvider";
 import { useAuth } from "./auth/AuthProvider";
 import { AuthPage, ConfirmEmailPage, ResetPasswordPage } from "./pages/AuthPages";
 import { MyStoresPage, StoreRegistrationPage } from "./pages/StorePages";
 const CatalogPage = lazy(() => import("./pages/CatalogPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 
+import CartPage, { CheckoutPage } from "./pages/CartPage";
+import { StoreDirectoryPage, PublicStorePage, PublicProductPage } from "./pages/PublicPages";
 import HomePage from "./pages/HomePage";
 import AccountPage from "./pages/AccountPage";
 
-export default function App() {
+function AppRoutes() {
   const { loading, recovery } = useAuth();
   const location = useLocation();
-  if (loading) return <main className="loading-screen" role="status">Preparando seu acesso…</main>;
+  const publicPath = location.pathname === "/" || location.pathname === "/catalogo" || location.pathname === "/lojas" || location.pathname.startsWith("/loja/") || location.pathname.startsWith("/produto/") || location.pathname === "/carrinho";
+  if (loading && !publicPath) return <main className="loading-screen" role="status">Preparando seu acesso…</main>;
   if (recovery && location.pathname !== "/redefinir-senha") return <Navigate to="/redefinir-senha" replace />;
   return <Routes>
     <Route path="/" element={<HomePage />} />
@@ -24,9 +28,16 @@ export default function App() {
     <Route path="/auth/confirmar" element={<ConfirmEmailPage />} />
     <Route path="/catalogo" element={<Suspense fallback={<main className="loading-screen" role="status">Carregando catálogo…</main>}><CatalogPage /></Suspense>} />
     <Route path="/admin" element={<Suspense fallback={<main className="loading-screen" role="status">Carregando administração…</main>}><AdminPage /></Suspense>} />
-    <Route path="/lojas" element={<MyStoresPage />} />
-    <Route path="/lojas/nova" element={<StoreRegistrationPage />} />
+    <Route path="/lojas" element={<StoreDirectoryPage />} />
+    <Route path="/loja/:slug" element={<PublicStorePage />} />
+    <Route path="/produto/:id" element={<PublicProductPage />} />
+    <Route path="/carrinho" element={<CartPage />} />
+    <Route path="/finalizar-compra" element={<CheckoutPage />} />
+    <Route path="/minhas-lojas" element={<MyStoresPage />} />
+    <Route path="/minhas-lojas/nova" element={<StoreRegistrationPage />} />
+    <Route path="/lojas/nova" element={<Navigate to="/minhas-lojas/nova" replace />} />
     <Route path="/minha-conta" element={<AccountPage />} />
     <Route path="*" element={<main className="loading-screen"><h1>Página não encontrada</h1><Link className="button primary" to="/">Voltar ao início</Link></main>} />
   </Routes>;
 }
+export default function App() { return <CartProvider><AppRoutes /></CartProvider>; }

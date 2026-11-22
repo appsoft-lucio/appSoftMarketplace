@@ -1,0 +1,13 @@
+.cart-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: var(--space-24); align-items: start; }
+.cart-layout .panel-card { margin-top: 0; }
+.cart-line { display: flex; align-items: start; gap: var(--space-20); justify-content: space-between; padding: var(--space-20) 0; border-top: 1px solid var(--color-divider); }
+.cart-line h3 { font-size: var(--font-size-body); margin: 0 0 var(--space-8); }
+.cart-line p { font-size: var(--font-size-sm); }
+.cart-line .text-button { padding: var(--space-8) 0; }
+.cart-line-actions { display: grid; gap: var(--space-12); text-align: right; }
+.cart-quantity { display: flex; align-items: center; gap: var(--space-12); }
+.cart-quantity .button { min-height: 36px; padding: var(--space-4) var(--space-12); }
+.cart-line .cart-line-error { color: var(--color-error-text); margin-top: var(--space-8); }
+.cart-summary .fine-print { margin-top: var(--space-20); }
+@media(max-width: 900px) { .cart-layout { grid-template-columns: 1fr; } }
+@media(max-width: 480px) { .cart-line { flex-direction: column; } .cart-line-actions { width: 100%; display: flex; justify-content: space-between; align-items: center; } }

@@ -19,7 +19,11 @@
                     "./catalog":  {
                                       "types":  "./src/catalog.ts",
                                       "default":  "./dist/catalog.js"
-                                  }
+                                  },
+                    "./cart":  {
+                                   "types":  "./src/cart.ts",
+                                   "default":  "./dist/cart.js"
+                               }
                 },
     "scripts":  {
                     "build":  "tsc -p tsconfig.build.json"

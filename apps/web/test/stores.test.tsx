@@ -7,8 +7,8 @@ const fake = vi.hoisted(() => ({ session: true, create: vi.fn(), list: vi.fn() }
 vi.mock("../src/auth/AuthProvider", () => ({ useAuth: () => ({ session: fake.session ? { user: { id: "owner" } } : null }) }));
 vi.mock("../src/stores/service", () => ({ storesService: { create: fake.create, list: fake.list } }));
 const store = { id: "store-1", name: "Minha Loja", slug: "minha-loja", description: "Produtos locais para toda a família.", phone: "11999991234", city: "São Paulo", state: "SP", status: "pending" };
-function open(path = "/lojas/nova") {
-  render(<MemoryRouter initialEntries={[path]}><Routes><Route path="/lojas/nova" element={<StoreRegistrationPage />} /><Route path="/lojas" element={<MyStoresPage />} /><Route path="/login" element={<h1>Entrar na conta</h1>} /></Routes></MemoryRouter>);
+function open(path = "/minhas-lojas/nova") {
+  render(<MemoryRouter initialEntries={[path]}><Routes><Route path="/minhas-lojas/nova" element={<StoreRegistrationPage />} /><Route path="/minhas-lojas" element={<MyStoresPage />} /><Route path="/login" element={<h1>Entrar na conta</h1>} /></Routes></MemoryRouter>);
 }
 beforeEach(() => { vi.resetAllMocks(); fake.session = true; fake.create.mockResolvedValue({ store }); fake.list.mockResolvedValue({ stores: [store] }); });
 async function fill() {
@@ -38,7 +38,7 @@ it("não abre o cadastro sem autenticação", () => {
   fake.session = false; open(); expect(screen.getByRole("heading", { name: "Entrar na conta" })).toBeVisible();
 });
 it("não apresenta falha de consulta como lista vazia", async () => {
-  fake.list.mockRejectedValue(new Error("Serviço indisponível")); open("/lojas");
+  fake.list.mockRejectedValue(new Error("Serviço indisponível")); open("/minhas-lojas");
   expect(await screen.findByRole("alert")).toHaveTextContent("Serviço indisponível");
   expect(screen.queryByText("Sua primeira loja começa aqui")).not.toBeInTheDocument();
 });

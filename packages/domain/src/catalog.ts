@@ -2,7 +2,7 @@ export interface Category { id: string; name: string; slug: string; parent_id: s
 export interface CatalogStore { id: string; name: string; slug: string }
 export interface CatalogProduct {
   id: string; name: string; description: string; price_cents: number;
-  store_id: string; store_name: string; image_url: string | null; sizes: string[];
+  store_id: string; store_name: string; store_slug: string; image_url: string | null; sizes: string[];
 }
 export interface CatalogResult {
   categories: Category[]; stores: CatalogStore[]; sizes: string[];

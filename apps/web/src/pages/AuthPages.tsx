@@ -1,7 +1,9 @@
 import "./AuthPages.css";
 import { useState } from "react";
 import type { FormEvent } from "react";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, Navigate, useNavigate, useSearchParams } from "react-router-dom";
+import { useCart } from "../cart/CartProvider";
+import { afterAuthPath } from "@appsoft/domain/cart";
 import { AuthLayout } from "../components/AuthLayout";
 import { PasswordField } from "../components/PasswordField";
 import { useAuth } from "../auth/AuthProvider";
@@ -18,11 +20,15 @@ const copy = {
 export function AuthPage({ mode }: { mode: Mode }) {
   const { session, loading } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const cart = useCart();
+  const destination = afterAuthPath(params.get("next"), cart.items.length > 0);
+  const authSuffix = destination === "/finalizar-compra" ? "?next=/finalizar-compra" : "";
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [message, setMessage] = useState("");
   const [title, description, button] = copy[mode];
-  if (!loading && session && ["login", "register"].includes(mode)) return <Navigate to="/minha-conta" replace />;
+  if (!loading && session && ["login", "register"].includes(mode)) return <Navigate to={destination} replace />;
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (busy || !authConfigured) return;
@@ -38,7 +44,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
       if (mode === "login") {
         const result = await client.auth.signInWithPassword({ email, password });
         if (result.error) throw result.error;
-        navigate("/minha-conta", { replace: true });
+        navigate(destination, { replace: true });
       } else if (mode === "register") {
         const result = await client.auth.signUp({ email, password, options: {
           emailRedirectTo: `${window.location.origin}/auth/confirmar`,
@@ -46,7 +52,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
           data: { name: String(form.get("name")).trim(), account_type: form.get("accountType") === "seller" ? "seller" : "customer" },
         } });
         if (result.error) throw result.error;
-        if (result.data.session) navigate("/minha-conta", { replace: true });
+        if (result.data.session) navigate(destination, { replace: true });
         else setMessage("Se o cadastro puder ser realizado, você receberá um e-mail de confirmação. Abra o link neste mesmo navegador. Confira também a pasta de spam. Já tem conta? Entre ou recupere sua senha.");
       } else if (mode === "forgot") {
         const result = await client.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/redefinir-senha` });
@@ -71,7 +77,7 @@ export function AuthPage({ mode }: { mode: Mode }) {
       {mode === "login" && <Link className="forgot-link" to="/recuperar-senha">Esqueci minha senha</Link>}
       <button className="button primary full" type="submit">{busy ? "Aguarde…" : button}</button>
     </fieldset></form>}
-    <div className="auth-links">{mode === "login" ? <><p>Ainda não tem conta? <Link to="/cadastro">Cadastre-se</Link></p><Link to="/confirmar-email">Reenviar confirmação de e-mail</Link></> : <p>Já tem conta? <Link to="/login">Entrar</Link></p>}</div>
+    <div className="auth-links">{mode === "login" ? <><p>Ainda não tem conta? <Link to={`/cadastro${authSuffix}`}>Cadastre-se</Link></p><Link to="/confirmar-email">Reenviar confirmação de e-mail</Link></> : <p>Já tem conta? <Link to={`/login${authSuffix}`}>Entrar</Link></p>}</div>
     {mode === "register" && <p className="fine-print">A escolha de lojista não ativa uma loja nem inicia uma cobrança. Após entrar, você poderá enviar o cadastro da loja para análise.</p>}
   </AuthLayout>;
 }
@@ -103,6 +109,7 @@ export function ResetPasswordPage() {
 }
 
 export function ConfirmEmailPage() {
+  const { items } = useCart();
   const { session, loading, linkError } = useAuth();
-  return <AuthLayout title="Confirmação de e-mail" description="Estamos concluindo a verificação da sua conta.">{loading ? <p role="status">Validando seu link…</p> : session && !linkError ? <><p className="notice success" role="status">Seu e-mail foi confirmado.</p><Link className="button primary" to="/minha-conta">Acessar minha conta</Link></> : <><p className="notice warning" role="alert">Não foi possível confirmar este link. Ele pode ter expirado, já ter sido usado ou ter sido aberto em outro navegador.</p><Link className="button primary" to="/confirmar-email">Solicitar nova confirmação</Link><p className="auth-links"><Link to="/login">Já confirmei, quero entrar</Link></p></>}</AuthLayout>;
+  return <AuthLayout title="Confirmação de e-mail" description="Estamos concluindo a verificação da sua conta.">{loading ? <p role="status">Validando seu link…</p> : session && !linkError ? <><p className="notice success" role="status">Seu e-mail foi confirmado.</p><Link className="button primary" to={items.length ? "/finalizar-compra" : "/minha-conta"}>{items.length ? "Continuar com meu carrinho" : "Acessar minha conta"}</Link></> : <><p className="notice warning" role="alert">Não foi possível confirmar este link. Ele pode ter expirado, já ter sido usado ou ter sido aberto em outro navegador.</p><Link className="button primary" to="/confirmar-email">Solicitar nova confirmação</Link><p className="auth-links"><Link to="/login">Já confirmei, quero entrar</Link></p></>}</AuthLayout>;
 }
