@@ -4,6 +4,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { CartProvider } from "../src/cart/CartProvider";
 import CatalogPage from "../src/pages/CatalogPage";
+import App from "../src/App";
 const fake = vi.hoisted(() => ({ load: vi.fn() }));
 vi.mock("../src/auth/AuthProvider", () => ({ useAuth: () => ({ session: null }) }));
 vi.mock("../src/catalog/service", () => ({ loadCatalog: fake.load }));
@@ -18,6 +19,17 @@ beforeEach(() => {
 });
 function open(query = "") { render(<MemoryRouter initialEntries={[`/catalogo${query}`]}><CartProvider><CatalogPage /></CartProvider></MemoryRouter>); }
 function lastParams() { return fake.load.mock.calls.at(-1)![0] as URLSearchParams; }
+it("abre a vitrine na home sem conta e o logo retorna à home", async () => {
+  const user = userEvent.setup();
+  render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+  expect(await screen.findByRole("heading", { name: "Vestido floral" })).toBeVisible();
+  expect(screen.getByLabelText("Buscar produtos")).toBeVisible();
+  expect(screen.getByRole("link", { name: "Entrar" })).toBeVisible();
+  expect(screen.queryByText("Um marketplace.")).not.toBeInTheDocument();
+  await user.click(screen.getByRole("link", { name: "AppSoft, início" }));
+  expect(screen.getByRole("heading", { name: "Vestido floral" })).toBeVisible();
+  expect(document.title).toBe("AppSoft Marketplace");
+});
 it("expande subcategorias e combina categoria, tamanho e loja na URL", async () => {
   const user = userEvent.setup(); open();
   await screen.findByRole("heading", { name: "Vestido floral" });

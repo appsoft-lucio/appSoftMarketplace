@@ -1,6 +1,8 @@
 # Instalação e abertura
 
-O manifesto inicia o aplicativo instalado em `/`, a home pública. Links diretos
+O manifesto inicia o aplicativo instalado em `/`, a vitrine pública de produtos,
+com busca, categorias e filtros. `/catalogo` mantém acesso ao mesmo catálogo.
+O logo retorna à vitrine. O convite de instalação aparece na home. Links diretos
 para produtos e os retornos de autenticação continuam acessíveis.
 
 O login usa sessionStorage: uma nova sessão de navegação começa como visitante,
