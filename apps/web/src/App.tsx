@@ -1,3 +1,6 @@
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const ShippingPage = lazy(() => import("./pages/ShippingPage"));
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
 const ProductsPage = lazy(() => import("./pages/ProductsPage"));
 import { lazy, Suspense } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -8,7 +11,7 @@ import { MyStoresPage, StoreRegistrationPage } from "./pages/StorePages";
 const CatalogPage = lazy(() => import("./pages/CatalogPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 
-import CartPage, { CheckoutPage } from "./pages/CartPage";
+import CartPage from "./pages/CartPage";
 import { StoreDirectoryPage } from "./pages/StoreDirectoryPage";
 import { PublicStorePage } from "./pages/PublicStorePage";
 import { PublicProductPage } from "./pages/PublicProductPage";
@@ -35,7 +38,10 @@ function AppRoutes() {
     <Route path="/loja/:slug" element={<PublicStorePage />} />
     <Route path="/produto/:id" element={<PublicProductPage />} />
     <Route path="/carrinho" element={<CartPage />} />
-    <Route path="/finalizar-compra" element={<CheckoutPage />} />
+    <Route path="/finalizar-compra" element={<Suspense fallback={<main role="status">Carregando...</main>}><CheckoutPage /></Suspense>} />
+    <Route path="/meus-pedidos" element={<Suspense fallback={<main role="status">Carregando...</main>}><OrdersPage /></Suspense>} />
+    <Route path="/minhas-lojas/:storeId/frete" element={<Suspense fallback={<main role="status">Carregando...</main>}><ShippingPage /></Suspense>} />
+    <Route path="/minhas-lojas/:storeId/pedidos" element={<Suspense fallback={<main role="status">Carregando...</main>}><OrdersPage /></Suspense>} />
     <Route path="/minhas-lojas" element={<MyStoresPage />} />
     <Route path="/minhas-lojas/:storeId/produtos" element={<Suspense fallback={<main role="status">Carregando produtos…</main>}><ProductsPage /></Suspense>} />
     <Route path="/minhas-lojas/nova" element={<StoreRegistrationPage />} />

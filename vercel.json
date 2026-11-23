@@ -9,6 +9,10 @@
                          "destination":  "/api",
                          "source":  "/api/:path*"
                      },
+                     { "source": "/meus-pedidos", "destination": "/index.html" },
+                     { "source": "/minhas-lojas/:storeId/produtos", "destination": "/index.html" },
+                     { "source": "/minhas-lojas/:storeId/frete", "destination": "/index.html" },
+                     { "source": "/minhas-lojas/:storeId/pedidos", "destination": "/index.html" },
                      {
                          "source":  "/login",
                          "destination":  "/index.html"

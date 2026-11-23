@@ -28,8 +28,8 @@ npm run build
 
 ## Estrutura
 
-- `apps/web`: interface React/Vite (`.tsx`). A tela inicial é provisória.
-- `apps/api`: API Node.js (`.ts`), atualmente somente liveness.
+- `apps/web`: interface React/Vite (`.tsx`), vitrine e painéis.
+- `apps/api`: API Node.js (`.ts`) para catálogo, lojas, administração e pedidos.
 - `packages/domain`: regras compartilhadas e tipos TypeScript.
 - `database/migrations`: modelo SQL versionado, ainda não aplicado ao Supabase.
 - `database/test`: validação do SQL em PostgreSQL temporário com PGlite, sem acesso ao banco real.
@@ -53,8 +53,12 @@ O [catálogo com filtros](docs/catalogo.md) está em /catalogo, com categorias l
 O [painel de produtos](docs/produtos.md) permite cadastrar e editar produtos,
 fotos, variações, promoções e informações de entrega. Requer a migração 005.
 
+O [checkout e frete](docs/checkout.md) permite configurar a entrega por loja,
+revisar endereço e preparar pedidos com reserva de estoque por 30 minutos.
+Requer a migração 006, ainda não aplicada automaticamente ao banco real.
+
 Outros recursos, como
-checkout, assinatura e pagamentos ainda
+cobrança de assinatura e pagamentos ainda
 serão implementados. A API de saúde não verifica banco de dados. As migrações 001, 002 e 003 foram aplicadas ao projeto Supabase novo. Não receba pagamentos nesta etapa.
 
 ## Estilos

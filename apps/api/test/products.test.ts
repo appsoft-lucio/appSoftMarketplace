@@ -17,7 +17,7 @@ import { createApp } from "../src/app.ts";
 
 test("produtos: autorização, edição, promoção, variações e limite do plano", async t => {
   const db = new PGlite(); t.after(() => db.close());
-  for (const name of ["001_initial.sql", "002_store_registration.sql", "003_store_admin.sql", "004_catalog_filters.sql", "005_product_management.sql"]) {
+  for (const name of ["001_initial.sql", "002_store_registration.sql", "003_store_admin.sql", "004_catalog_filters.sql", "005_product_management.sql", "006_checkout_shipping.sql"]) {
     await db.exec((await readFile(new URL(`../../../database/migrations/${name}`, import.meta.url), "utf8")).replace(/^\uFEFF/, ""));
   }
   const adapter = db as unknown as Database;

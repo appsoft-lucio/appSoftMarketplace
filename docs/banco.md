@@ -30,14 +30,14 @@ Não existem exclusões em cascata de registros comerciais; produtos e lojas dev
 - A futura API deverá usar credenciais somente no servidor e validar identidade e loja em toda operação.
   RLS sem políticas não substitui autorização da API quando a conexão usa o proprietário das tabelas.
 
-## Ainda precisa ser implementado
+## Checkout e próximos passos
 
-O SQL é a fundação, não um checkout completo. Antes de compras reais, implementar:
+O [checkout](checkout.md) com a migração 006 já implementa validação de
+loja/assinatura, preço no servidor, frete por loja, reserva com locks, somas na
+transação, idempotência e liberação após cancelamento/expiração. Não há cobrança.
+Antes de compras pagas, implementar:
 
-- validação de vitrine/assinatura no checkout, sem confiar no frontend;
-- preço e estoque lidos no servidor, locks, reserva e liberação após falha/cancelamento;
-- soma dos itens e fretes verificada na transação de checkout;
-- transições de status, trilha de auditoria e confirmação exclusiva por webhook válido;
+- transições após pagamento e confirmação exclusiva por webhook válido;
 - pagamentos de várias lojas, repasses, reembolsos e eventos duplicados;
 - renovação idempotente e aplicação de períodos pagos;
 - credencial restrita de aplicação, políticas de acesso e testes contra PostgreSQL real.

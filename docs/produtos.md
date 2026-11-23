@@ -65,9 +65,10 @@ Aplicar `database/migrations/005_product_management.sql` após 001–004,
 antes de publicar a API nova. Não cria produtos nem ativa assinaturas e
 preserva os preços existentes. Não foi aplicada automaticamente ao Supabase.
 
-O frete cadastrado é informativo na página do produto. O carrinho apresenta
-subtotal dos produtos; somar fretes por loja, validar área atendida, reservar
-estoque e criar pedidos continuam sendo etapas do checkout.
+O frete cadastrado aparece na página do produto. O carrinho apresenta subtotal;
+o [checkout](checkout.md) soma o frete por loja e prepara pedidos com reserva
+temporária de estoque. A cobrança ainda não está integrada. Produtos com reserva
+ativa ficam bloqueados para edição até cancelamento ou expiração.
 
 ## Verificação
 

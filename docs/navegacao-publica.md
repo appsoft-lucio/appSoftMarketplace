@@ -10,8 +10,9 @@ sincronização com a conta ou entre dispositivos. A API recalcula preços e
 disponibilidade antes de permitir continuar. Adicionar não reserva estoque.
 
 Para continuar, o visitante entra ou cria uma conta. `/finalizar-compra` exige
-autenticação e informa que frete e pagamento ainda estão em desenvolvimento.
-Nenhum pedido ou cobrança é criado nesta etapa.
+autenticação e permite revisar endereço, frete por loja e preparar pedidos com
+reserva temporária de estoque. O pagamento ainda não está disponível e nenhuma
+cobrança é realizada. Consulte [checkout e frete](checkout.md).
 
 A gestão das lojas fica nas rotas protegidas `/minhas-lojas` e
 `/minhas-lojas/nova`. A rota antiga `/lojas/nova` redireciona para o cadastro.

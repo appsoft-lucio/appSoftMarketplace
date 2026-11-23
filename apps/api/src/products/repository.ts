@@ -17,6 +17,9 @@ export async function saveProduct(db: Database, storeId: string, id: string | nu
   const values: unknown[] = fields.map(field => input[field]);
   let productId: string;
   if (id) {
+    const reserved=await db.query(`SELECT 1 FROM marketplace_v2.order_items i JOIN marketplace_v2.store_orders o ON o.id=i.order_id JOIN marketplace_v2.checkouts c ON c.id=o.checkout_id
+      WHERE i.product_id=$1 AND i.store_id=$2 AND o.status='pending_payment' AND c.expires_at>clock_timestamp() LIMIT 1`,[id,storeId]);
+    if (reserved.rows.length) throw new HttpError(409,"Este produto possui estoque reservado. Aguarde o encerramento das reservas para editar.");
     const result = await db.query<{id:string}>(`UPDATE marketplace_v2.products SET ${fields.map((f,i)=>`${f}=$${i+1}`).join(',')} WHERE id=$15 AND store_id=$16 RETURNING id`, [...values,id,storeId]);
     if (!result.rows.length) throw new HttpError(404, "Produto não encontrado nesta loja.");
     productId = id;

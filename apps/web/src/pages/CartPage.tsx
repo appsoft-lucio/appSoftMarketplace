@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { cartKey } from "@appsoft/domain/cart";
 import type { CartQuote } from "@appsoft/domain/cart";
 import { formatMoney } from "@appsoft/domain";
@@ -38,12 +38,5 @@ export default function CartPage() {
       const label = `${line.product?.name || "Produto indisponível"}${line.size ? `, tamanho ${line.size}` : ""}`;
       return <article className="cart-line" key={key}><div><h3>{line.product ? <Link to={`/produto/${line.product.id}`}>{line.product.name}</Link> : "Produto indisponível"}</h3>{line.size && <p>Tamanho: {line.size}</p>}{line.product && <p>{formatMoney(line.product.price_cents)} por unidade</p>}{line.error && <p className="cart-line-error" role="alert">{line.error}</p>}<button className="text-button" onClick={() => cart.remove(key)} aria-label={`Remover ${label}`}>Remover</button></div><div className="cart-line-actions"><div className="cart-quantity"><button className="button secondary" disabled={line.quantity <= 1} onClick={() => cart.setQuantity(key, line.quantity - 1)} aria-label={`Diminuir ${label}`}>−</button><span aria-label={`Quantidade de ${label}`}>{line.quantity}</span><button className="button secondary" disabled={line.quantity >= line.maxQuantity} onClick={() => cart.setQuantity(key, line.quantity + 1)} aria-label={`Aumentar ${label}`}>+</button></div><strong>{line.lineTotalCents === null ? "Indisponível" : formatMoney(line.lineTotalCents)}</strong></div></article>;
     })}</section>;
-  })}</div><aside className="panel-card cart-summary"><h2>Resumo</h2><dl className="definition-list"><div><dt>Subtotal{quote.hasIssues ? " disponível" : ""}</dt><dd>{formatMoney(quote.subtotalCents)}</dd></div><div><dt>Frete</dt><dd>A definir</dd></div></dl>{quote.hasIssues && <p className="notice warning">Ajuste ou remova os itens indisponíveis para continuar.</p>}{!quote.hasIssues && <Link className="button primary full" to={session ? "/finalizar-compra" : "/login?next=/finalizar-compra"}>{session ? "Continuar" : "Entrar para continuar"}</Link>}<p className="fine-print">Frete e pagamento ainda não estão disponíveis. Seu carrinho não reserva estoque e será conferido novamente.</p><Link to="/catalogo">Continuar explorando</Link></aside></div>}</main></div>;
-}
-export function CheckoutPage() {
-  const { session } = useAuth();
-  const { items } = useCart();
-  if (!session) return <Navigate to="/login?next=/finalizar-compra" replace />;
-  if (!items.length) return <Navigate to="/carrinho" replace />;
-  return <div className="site-shell"><PublicHeader /><main className="page-content"><div className="page-heading"><h1>Você está conectado</h1></div><section className="panel-card"><h2>Seu carrinho continua salvo</h2><p>O frete e o pagamento estão em desenvolvimento. Nenhuma compra ou cobrança foi feita. Você poderá concluir a compra quando essa etapa estiver disponível.</p><Link className="button primary" to="/carrinho">Voltar ao carrinho</Link></section></main></div>;
+  })}</div><aside className="panel-card cart-summary"><h2>Resumo</h2><dl className="definition-list"><div><dt>Subtotal{quote.hasIssues ? " disponível" : ""}</dt><dd>{formatMoney(quote.subtotalCents)}</dd></div><div><dt>Frete</dt><dd>A definir</dd></div></dl>{quote.hasIssues && <p className="notice warning">Ajuste ou remova os itens indisponíveis para continuar.</p>}{!quote.hasIssues && <Link className="button primary full" to={session ? "/finalizar-compra" : "/login?next=/finalizar-compra"}>{session ? "Continuar" : "Entrar para continuar"}</Link>}<p className="fine-print">Confira o frete por loja na próxima etapa. O carrinho não reserva estoque. O pagamento ainda não está disponível.</p><Link to="/catalogo">Continuar explorando</Link></aside></div>}</main></div>;
 }

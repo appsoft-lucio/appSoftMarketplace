@@ -8,6 +8,7 @@ interface CartState {
   add: (product: PublicProduct, size: string | null, quantity?: number) => void;
   setQuantity: (key: string, quantity: number) => void;
   remove: (key: string) => void;
+  consume: (purchased: CartItem[]) => void;
 }
 const Context = createContext<CartState | null>(null);
 export function CartProvider({ children }: { children: ReactNode }) {
@@ -33,7 +34,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems(parseCart(next));
   };
   const setQuantity = (key: string, quantity: number) => setItems(parseCart(items.map(item => cartKey(item) === key ? { ...item, quantity } : item)));
-  const remove = (key: string) => setItems(items.filter(item => cartKey(item) !== key));
-  return <Context.Provider value={{ items, count: items.reduce((sum, item) => sum + item.quantity, 0), storageWarning, add, setQuantity, remove }}>{children}</Context.Provider>;
+  const remove = (key: string) => setItems(previous=>previous.filter(item => cartKey(item) !== key));
+  const consume = (purchased: CartItem[]) => setItems(previous=>previous.flatMap(item=>{
+    const bought=purchased.find(line=>cartKey(line)===cartKey(item));
+    if(!bought)return [item];
+    return item.quantity>bought.quantity ? [{...item,quantity:item.quantity-bought.quantity}] : [];
+  }));
+  return <Context.Provider value={{ items, count: items.reduce((sum, item) => sum + item.quantity, 0), storageWarning, add, setQuantity, remove, consume }}>{children}</Context.Provider>;
 }
 export function useCart() { const cart = useContext(Context); if (!cart) throw new Error("CartProvider ausente."); return cart; }

@@ -2,6 +2,8 @@ import { publicImage } from "./public/images.ts";
 import { getPool } from "./database.ts";
 import type { Database } from "./stores/repository.ts";
 import { productService } from "./products/service.ts";
+import { checkoutService } from "./checkout/service.ts";
+import { parseCheckout, parseShipping } from "@appsoft/domain/checkout";
 import { productUuid, validateProduct } from "@appsoft/domain/products";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { publicService } from "./public/service.ts";
@@ -15,7 +17,7 @@ import { validateStore } from "@appsoft/domain/stores";
 import { validateStoreReview } from "@appsoft/domain/admin";
 import type { AdminStoreQuery } from "@appsoft/domain/admin";
 
-type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService; products?: typeof productService; image?: (id: string) => ReturnType<typeof publicImage> };
+type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService; products?: typeof productService; image?: (id: string) => ReturnType<typeof publicImage>; checkout?: typeof checkoutService };
 function json(response: ServerResponse, status: number, body: unknown) {
   response.writeHead(status);
   response.end(JSON.stringify(body));
@@ -99,6 +101,30 @@ export function createApp(dependencies: Dependencies = { verifyUser, stores: sto
         const page = Number(url.searchParams.get("page") || 1);
         if (search.length > 100 || !Number.isInteger(page) || page < 1 || page > 100000) throw new HttpError(400, "Filtros inválidos.");
         json(response, 200, await service.stores(search, page)); return;
+      }
+      const storeShipping=path.match(/^\/api\/stores\/([^/]+)\/(shipping|orders)$/);
+      const cancelMatch=path.match(/^\/api\/checkouts\/([^/]+)\/cancel$/);
+      if (["/api/checkout/quote","/api/checkouts","/api/orders"].includes(path) || storeShipping || cancelMatch) {
+        const allowed=storeShipping?.[2]==="shipping" ? ["GET","PUT"] : path==="/api/orders" || storeShipping?.[2]==="orders" ? ["GET"] : ["POST"];
+        if (!allowed.includes(request.method || "")) { response.setHeader("Allow",allowed.join(", ")); json(response,405,{message:"Método não permitido."}); return; }
+        if (storeShipping && !productUuid.test(storeShipping[1]) || cancelMatch && !productUuid.test(cancelMatch[1])) throw new HttpError(400,"Identificador inválido.");
+        const token=request.headers.authorization?.match(/^Bearer ([^\s]+)$/i)?.[1];
+        if (!token) throw new HttpError(401,"Entre na sua conta para continuar.");
+        const user=await dependencies.verifyUser(token); const service=dependencies.checkout || checkoutService;
+        if (path==="/api/orders") { json(response,200,{orders:await service.orders(user)}); return; }
+        if (cancelMatch) { await service.cancel(user,cancelMatch[1]); json(response,200,{cancelled:true}); return; }
+        if (storeShipping) {
+          if (storeShipping[2]==="orders") { json(response,200,{orders:await service.storeOrders(user,storeShipping[1])}); return; }
+          let settings;
+          if (request.method==="PUT") { const body=await readBody(request); try {settings=parseShipping(body);} catch(error) {throw new HttpError(400,(error as Error).message);} }
+          json(response,200,{shipping:await service.shipping(user,storeShipping[1],settings)}); return;
+        }
+        const body=await readBody(request,32768); let input;
+        try {input=parseCheckout(body);} catch(error) {throw new HttpError(400,(error as Error).message);}
+        if (path==="/api/checkout/quote") { json(response,200,await service.quote(user,input)); return; }
+        const {idempotencyKey,quoteToken}=body as Record<string,unknown>;
+        if (typeof idempotencyKey!=="string" || !productUuid.test(idempotencyKey) || typeof quoteToken!=="string" || !/^[a-f0-9]{64}$/.test(quoteToken)) throw new HttpError(400,"Atualize o resumo da compra antes de continuar.");
+        json(response,201,await service.create(user,input,idempotencyKey,quoteToken)); return;
       }
       const productRoute = path.match(/^\/api\/stores\/([^/]+)\/products(?:\/([^/]+))?$/);
       if (productRoute) {

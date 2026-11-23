@@ -163,6 +163,6 @@ it("login retorna ao carrinho autenticado sem apagar os itens do visitante", asy
   await user.type(await screen.findByLabelText("E-mail"), "ana@example.test");
   await user.type(screen.getByLabelText("Senha", { exact: true }), "minha-senha-segura");
   await user.click(screen.getByRole("button", { name: "Entrar" }));
-  expect(await screen.findByRole("heading", { name: "Você está conectado" })).toBeVisible();
+  expect(await screen.findByRole("heading", { name: "Revisar compra" })).toBeVisible();
   expect(JSON.parse(localStorage.getItem("appsoft.cart.v1")!).items).toEqual(items);
 });
