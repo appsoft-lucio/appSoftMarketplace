@@ -1,16 +1,13 @@
 import "./StorePages.css";
 import { useEffect, useState } from "react";
-import type { FormEvent, ReactNode } from "react";
+import type { FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { BRAZIL_STATES, storeSlug, validateStore } from "@appsoft/domain/stores";
 import type { Store } from "@appsoft/domain/stores";
 import { useAuth } from "../auth/AuthProvider";
 import { storesService } from "../stores/service";
-import logo from "../../../../imagens/logo-appsoft-orange-semFundo.png";
+import { StoreLayout } from "../stores/components/StoreLayout";
 
-function StoreLayout({ children }: { children: ReactNode }) {
-  return <div className="site-shell"><header className="site-header"><Link to="/"><img src={logo} alt="AppSoft, início" /></Link><Link className="button secondary" to="/minha-conta">Minha conta</Link></header><main className="page-content">{children}</main></div>;
-}
 
 export function StoreRegistrationPage() {
   const { session } = useAuth();

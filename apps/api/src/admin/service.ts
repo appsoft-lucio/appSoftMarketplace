@@ -3,7 +3,14 @@ import type { Database } from "../stores/repository.ts";
 import type { Identity } from "../auth.ts";
 import type { AdminStoreQuery, StoreReviewInput } from "@appsoft/domain/admin";
 import { listAdminStores, profileRole, requireAdmin, reviewStore, storeHistory } from "./repository.ts";
+import { listAdminCustomers } from "./repository.ts";
+import type { AdminCustomerQuery } from "@appsoft/domain/admin";
 export const adminService = {
+  async customers(user: Identity, query: AdminCustomerQuery) {
+    const db = getPool() as unknown as Database;
+    await requireAdmin(db, user.id);
+    return listAdminCustomers(db, query);
+  },
   profile: (user: Identity) => profileRole(getPool() as unknown as Database, user.id),
   async list(user: Identity, query: AdminStoreQuery) {
     const db = getPool() as unknown as Database;

@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, expect, it, vi } from "vitest";
-import { InstallPrompt } from "../src/components/InstallPrompt";
+import { InstallPrompt } from "../src/components/pwa/InstallPrompt";
 import { authSessionStorage } from "../src/auth/session-storage";
 
 beforeEach(() => { sessionStorage.clear(); localStorage.clear(); vi.restoreAllMocks(); });

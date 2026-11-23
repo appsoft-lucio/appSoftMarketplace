@@ -8,7 +8,9 @@ const CatalogPage = lazy(() => import("./pages/CatalogPage"));
 const AdminPage = lazy(() => import("./pages/AdminPage"));
 
 import CartPage, { CheckoutPage } from "./pages/CartPage";
-import { StoreDirectoryPage, PublicStorePage, PublicProductPage } from "./pages/PublicPages";
+import { StoreDirectoryPage } from "./pages/StoreDirectoryPage";
+import { PublicStorePage } from "./pages/PublicStorePage";
+import { PublicProductPage } from "./pages/PublicProductPage";
 import HomePage from "./pages/HomePage";
 import AccountPage from "./pages/AccountPage";
 

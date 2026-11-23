@@ -4,17 +4,34 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import AdminPage from "../src/pages/AdminPage";
 import { ApiError } from "../src/stores/service";
-const fake = vi.hoisted(() => ({ list: vi.fn(), history: vi.fn(), review: vi.fn() }));
+const fake = vi.hoisted(() => ({ list: vi.fn(), history: vi.fn(), review: vi.fn(), customers: vi.fn() }));
 vi.mock("../src/auth/AuthProvider", () => ({ useAuth: () => ({ session: { user: { id: "admin" } } }) }));
-vi.mock("../src/stores/admin-service", () => ({ adminService: { list: fake.list, history: fake.history, review: fake.review } }));
+vi.mock("../src/stores/admin-service", () => ({ adminService: { list: fake.list, history: fake.history, review: fake.review, customers: fake.customers } }));
 const store = { id: "store-1", name: "Loja Revisão", slug: "loja-revisao", description: "Uma loja em análise.", phone: "11999999999", city: "São Paulo", state: "SP", status: "pending", created_at: "2026-11-22T12:00:00Z", owners: [{ name: "Ana", email: "ana@example.test" }] };
 beforeEach(() => {
   vi.resetAllMocks();
   HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
   fake.list.mockResolvedValue({ stores: [store], total: 1, page: 1, pageSize: 20, counts: { pending: 1, approved: 0, suspended: 0 } });
   fake.history.mockResolvedValue({ reviews: [] }); fake.review.mockResolvedValue({});
+  fake.customers.mockResolvedValue({ customers: [{ id: "buyer", name: "Cliente sem loja", email: "buyer@example.test", created_at: "2026-11-22T12:00:00Z", email_confirmed: true, role: "customer", store_count: 0 }], total: 1, page: 1, pageSize: 20 });
 });
 function open() { render(<MemoryRouter><AdminPage /></MemoryRouter>); }
+it("consulta clientes sem loja e busca por nome ou e-mail", async () => {
+  const user = userEvent.setup(); open();
+  await user.click(screen.getByRole("button", { name: "Clientes" }));
+  expect(await screen.findByRole("heading", { name: "Cliente sem loja" })).toBeVisible();
+  expect(screen.getByText("buyer@example.test")).toBeVisible();
+  await user.type(screen.getByLabelText("Buscar cliente"), "buyer");
+  await user.click(screen.getByRole("button", { name: "Buscar clientes" }));
+  expect(fake.customers).toHaveBeenLastCalledWith({ search: "buyer", page: 1 }, expect.any(AbortSignal));
+});
+it("oculta os clientes quando o servidor recusa acesso", async () => {
+  fake.customers.mockRejectedValue(new ApiError(403, "Acesso exclusivo da administração."));
+  const user = userEvent.setup(); open();
+  await user.click(screen.getByRole("button", { name: "Clientes" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent("Acesso exclusivo");
+  expect(screen.queryByText("buyer@example.test")).not.toBeInTheDocument();
+});
 it("não expõe a lista quando a API recusa permissão", async () => {
   fake.list.mockRejectedValue(new ApiError(403, "Esta área é exclusiva da administração."));
   open(); expect(await screen.findByRole("heading", { name: "Acesso restrito" })).toBeVisible();

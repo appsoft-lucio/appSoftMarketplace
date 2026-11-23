@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { CartProvider, CART_STORAGE_KEY } from "../src/cart/CartProvider";
-import { PublicProductPage } from "../src/pages/PublicPages";
+import { PublicProductPage } from "../src/pages/PublicProductPage";
 import CartPage from "../src/pages/CartPage";
 const fake = vi.hoisted(() => ({ product: vi.fn(), quote: vi.fn() }));
 vi.mock("../src/auth/AuthProvider", () => ({ useAuth: () => ({ session: null }) }));

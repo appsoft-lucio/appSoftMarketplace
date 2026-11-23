@@ -22,6 +22,22 @@ export interface AdminStoreList {
   counts: Record<StoreStatus, number>;
 }
 export interface AdminStoreQuery { status: StoreStatus | "all"; search: string; page: number }
+export interface AdminCustomerQuery { search: string; page: number }
+export interface AdminCustomer {
+  id: string;
+  name: string;
+  email: string;
+  created_at: string;
+  email_confirmed: boolean;
+  role: "admin" | "customer";
+  store_count: number;
+}
+export interface AdminCustomerList {
+  customers: AdminCustomer[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
 export function validateStoreReview(body: unknown): StoreReviewInput {
   if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("Informe a decisão para esta loja.");
   const input = body as Record<string, unknown>;

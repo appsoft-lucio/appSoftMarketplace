@@ -1,6 +1,25 @@
 import type { AdminStore, AdminStoreList, AdminStoreQuery, StoreReview, StoreReviewInput } from "@appsoft/domain/admin";
 import type { Database } from "../stores/repository.ts";
 import { HttpError } from "../auth.ts";
+import type { AdminCustomer, AdminCustomerList, AdminCustomerQuery } from "@appsoft/domain/admin";
+
+export async function listAdminCustomers(db: Database, query: AdminCustomerQuery): Promise<AdminCustomerList> {
+  const pageSize = 20;
+  // Auth is the source of all registered accounts, including buyers without stores.
+  // Select an explicit allowlist; never return authentication secrets or metadata.
+  const source = `SELECT a.id, coalesce(nullif(trim(a.raw_user_meta_data->>'name'), ''), u.name, 'Sem nome informado') AS name,
+    coalesce(a.email, '') AS email, a.created_at, (a.email_confirmed_at IS NOT NULL) AS email_confirmed,
+    coalesce(u.role, 'customer') AS role,
+    (SELECT count(*)::int FROM marketplace_v2.store_members m WHERE m.user_id = u.id) AS store_count
+    FROM auth.users a LEFT JOIN marketplace_v2.users u ON u.auth_subject = a.id::text
+    WHERE a.deleted_at IS NULL AND NOT coalesce(a.is_anonymous, false)`;
+  const filter = `($1 = '' OR strpos(lower(name), lower($1)) > 0 OR strpos(lower(email), lower($1)) > 0)`;
+  const [rows, count] = await Promise.all([
+    db.query<AdminCustomer>(`WITH accounts AS (${source}) SELECT * FROM accounts WHERE ${filter} ORDER BY created_at DESC, id LIMIT $2 OFFSET $3`, [query.search, pageSize, (query.page - 1) * pageSize]),
+    db.query<{ total: number }>(`WITH accounts AS (${source}) SELECT count(*)::int AS total FROM accounts WHERE ${filter}`, [query.search]),
+  ]);
+  return { customers: rows.rows, total: count.rows[0].total, page: query.page, pageSize };
+}
 
 export async function profileRole(db: Database, subject: string): Promise<"admin" | "customer"> {
   const result = await db.query<{ role: string }>("SELECT role FROM marketplace_v2.users WHERE auth_subject = $1", [subject]);

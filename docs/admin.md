@@ -1,4 +1,4 @@
-﻿# Administração do marketplace
+# Administração do marketplace
 
 ## Acesso
 
@@ -53,3 +53,14 @@ histórico, rollback quando a auditoria falha e revogação de acesso.
 
 Validação real após publicar: entrar com Teste 01, abrir o painel, analisar a loja e escolher
 explicitamente a decisão. Nenhuma loja real foi aprovada ou suspensa durante os testes.
+# Consulta de clientes
+
+O painel `/admin` tem as seções Lojas e Clientes. Clientes permite consultar as
+contas por nome ou e-mail, com paginação de 20 registros, data de cadastro,
+confirmação de e-mail, papel administrativo e quantidade de lojas vinculadas.
+
+`GET /api/admin/customers?q=&page=1` exige autenticação e papel `admin` consultado
+no banco. Usa `auth.users` como origem para incluir compradores sem loja, com
+associação opcional ao perfil local. Exclui contas excluídas e anônimas. Retorna
+apenas os campos necessários; senhas, tokens e metadados completos não são enviados.
+É uma consulta somente leitura e não requer nova migração.

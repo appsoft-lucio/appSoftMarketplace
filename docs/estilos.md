@@ -10,7 +10,7 @@ A ordem de importação é explícita:
 2. theme.css: paleta semântica do tema claro, estados e superfícies.
 3. base.css: box-sizing, margem inicial, controles, foco e resets mínimos.
 4. typography.css: fonte do texto, família dos títulos e tipografia base.
-5. layout.css: shell/cabeçalho/rodapé e títulos/contêineres compartilhados.
+5. layout.css: shell, rodapé e títulos/contêineres compartilhados.
 6. components.css: botões, mensagens, cards, badges, paginação e listas de definição.
 7. forms.css: estrutura dos formulários e campos reutilizados.
 
@@ -21,14 +21,19 @@ administração ou catálogo. O antigo style.css foi removido.
 
 Cada página/componente importa o CSS que lhe pertence:
 
-- pages/HomePage.tsx → HomePage.css
+- pages/HomePage.tsx reutiliza o catálogo como vitrine inicial.
 - pages/AccountPage.tsx → AccountPage.css
 - pages/AuthPages.tsx → AuthPages.css
 - pages/StorePages.tsx → StorePages.css
 - pages/AdminPage.tsx → AdminPage.css
 - pages/CatalogPage.tsx → CatalogPage.css
-- components/AuthLayout.tsx → AuthLayout.css
-- components/PasswordField.tsx → PasswordField.css
+- components/layout/SiteHeader.tsx → SiteHeader.css
+- components/layout/PublicHeader.tsx → PublicHeader.css
+- components/auth/AuthLayout.tsx → AuthLayout.css
+- components/forms/PasswordField.tsx → PasswordField.css
+- components/pwa/InstallPrompt.tsx → InstallPrompt.css
+
+A estrutura das pastas está descrita em [componentes](componentes.md).
 
 Home e Minha conta saíram de App.tsx; App mantém as rotas. As páginas de administração
 e catálogo continuam com carregamento sob demanda. As classes locais usam prefixos

@@ -6,7 +6,7 @@ import { formatMoney } from "@appsoft/domain";
 import { useCart } from "../cart/CartProvider";
 import { publicApi } from "../cart/service";
 import { useAuth } from "../auth/AuthProvider";
-import { PublicHeader } from "../components/PublicHeader";
+import { PublicHeader } from "../components/layout/PublicHeader";
 import "./CartPage.css";
 
 function useQuote() {

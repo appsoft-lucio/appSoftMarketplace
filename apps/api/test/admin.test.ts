@@ -9,6 +9,7 @@ import { HttpError } from "../src/auth.ts";
 import { insertStore } from "../src/stores/repository.ts";
 import type { Database } from "../src/stores/repository.ts";
 import { listAdminStores, profileRole, requireAdmin, reviewStore, storeHistory } from "../src/admin/repository.ts";
+import { listAdminCustomers } from "../src/admin/repository.ts";
 
 const owner = { id: "owner-auth", email: "owner@example.test", name: "Lojista" };
 const admin = { id: "admin-auth", email: "admin@example.test", name: "Admin" };
@@ -21,9 +22,21 @@ test("admin: autorização, análise, concorrência de status e auditoria transa
     await db.exec((await readFile(new URL(`../../../database/migrations/${name}`, import.meta.url), "utf8")).replace(/^\uFEFF/, ""));
   }
   const database = db as unknown as Database;
+  await db.exec(`CREATE SCHEMA auth; CREATE TABLE auth.users (
+    id text PRIMARY KEY, email text, created_at timestamptz DEFAULT now(),
+    email_confirmed_at timestamptz, raw_user_meta_data jsonb DEFAULT '{}',
+    deleted_at timestamptz, is_anonymous boolean DEFAULT false,
+    encrypted_password text DEFAULT 'must-not-leak');
+    INSERT INTO auth.users(id,email,raw_user_meta_data,email_confirmed_at) VALUES
+    ('buyer-auth','buyer@example.test','{"name":"Cliente sem loja"}',now()),
+    ('pending-auth','pending@example.test','{"name":"Confirmação pendente"}',null),
+    ('owner-auth','owner@example.test','{"name":"Lojista"}',now());
+    INSERT INTO auth.users(id,email,deleted_at,is_anonymous) VALUES
+    ('deleted','deleted@example.test',now(),false), ('anonymous',null,null,true);`);
   const store = await db.transaction(tx => insertStore(tx as unknown as Database, owner, input));
   await db.query("INSERT INTO marketplace_v2.users (auth_subject, name, email, role) VALUES ($1, $2, $3, 'admin')", [admin.id, admin.name, admin.email]);
   const adminMethods = {
+    async customers(user: typeof owner, query: Parameters<typeof listAdminCustomers>[1]) { await requireAdmin(database, user.id); return listAdminCustomers(database, query); },
     profile: (user: typeof owner) => profileRole(database, user.id),
     async list(user: typeof owner, query: Parameters<typeof listAdminStores>[1]) { await requireAdmin(database, user.id); return listAdminStores(database, query); },
     async history(user: typeof owner, id: string) { await requireAdmin(database, user.id); return storeHistory(database, id); },
@@ -52,6 +65,18 @@ test("admin: autorização, análise, concorrência de status e auditoria transa
     ...(body ? { body: JSON.stringify(body) } : {}),
   });
   const statusPath = `/api/admin/stores/${store.id}/status`;
+  assert.equal((await call("/api/admin/customers")).status, 401);
+  assert.equal((await call("/api/admin/customers", "owner")).status, 403);
+  const customers = await (await call("/api/admin/customers", "admin")).json();
+  assert.equal(customers.total, 3);
+  assert.equal(customers.customers.find((c: { id: string }) => c.id === "buyer-auth").store_count, 0);
+  assert.equal(customers.customers.find((c: { id: string }) => c.id === "owner-auth").store_count, 1);
+  assert.equal(customers.customers.find((c: { id: string }) => c.id === "pending-auth").email_confirmed, false);
+  assert.equal(JSON.stringify(customers).includes("encrypted_password"), false);
+  assert.equal(JSON.stringify(customers).includes("raw_user_meta_data"), false);
+  assert.equal((await (await call("/api/admin/customers?q=BUYER", "admin")).json()).total, 1);
+  assert.equal((await (await call("/api/admin/customers?q=%25", "admin")).json()).total, 0);
+  assert.equal((await call("/api/admin/customers?page=-1", "admin")).status, 400);
   const historyPath = `/api/admin/stores/${store.id}/history`;
   assert.equal((await call("/api/admin/stores")).status, 401);
   assert.equal((await call("/api/admin/stores", "owner")).status, 403);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { adminService } from "../stores/admin-service";
+import { adminService } from "../admin-service";
 export function AdminAccessLink() {
   const [role, setRole] = useState<string>("");
   useEffect(() => {

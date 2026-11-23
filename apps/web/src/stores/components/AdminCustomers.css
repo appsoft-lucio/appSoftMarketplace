@@ -1,0 +1,20 @@
+.admin-customer-search { display: flex; align-items: end; gap: var(--space-16); }
+.admin-customer-search label { display: grid; gap: var(--space-8); flex: 1; }
+.admin-customer-search input {
+  width: 100%; min-width: 0; padding: var(--space-12);
+  border: 1px solid var(--color-input-border); border-radius: var(--radius-8);
+  background: var(--color-surface); color: var(--color-text);
+}
+.admin-customer-list { padding: 0; list-style: none; }
+.admin-customer-list li {
+  display: flex; justify-content: space-between; gap: var(--space-20);
+  padding: var(--space-20) 0; border-bottom: 1px solid var(--color-divider);
+}
+.admin-customer-list li > div { min-width: 0; }
+.admin-customer-list h3 { margin: 0; }
+.admin-customer-email { overflow-wrap: anywhere; }
+.admin-sections { display: flex; gap: var(--space-12); margin-bottom: var(--space-24); }
+@media (max-width: 650px) {
+  .admin-customer-search { align-items: stretch; flex-direction: column; }
+  .admin-customer-list li { flex-direction: column; gap: var(--space-8); }
+}

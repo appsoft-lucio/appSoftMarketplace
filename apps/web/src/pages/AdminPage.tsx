@@ -7,7 +7,8 @@ import { validateStoreReview } from "@appsoft/domain/admin";
 import { useAuth } from "../auth/AuthProvider";
 import { adminService } from "../stores/admin-service";
 import { ApiError } from "../stores/service";
-import logo from "../../../../imagens/logo-appsoft-orange-semFundo.png";
+import { SiteHeader } from "../components/layout/SiteHeader";
+import { AdminCustomers } from "../stores/components/AdminCustomers";
 
 const labels = { pending: "Aguardando aprovação", approved: "Cadastro aprovado", suspended: "Suspensa" };
 const date = (value: string) => new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short" }).format(new Date(value));
@@ -55,6 +56,7 @@ function ReviewDialog({ store, onClose, onSaved }: { store: AdminStore; onClose:
 }
 
 export default function AdminPage() {
+  const [section, setSection] = useState<"stores" | "customers">("stores");
   const { session } = useAuth();
   const [query, setQuery] = useState<AdminStoreQuery>({ status: "pending", search: "", page: 1 });
   const [search, setSearch] = useState("");
@@ -67,18 +69,18 @@ export default function AdminPage() {
   const [notice, setNotice] = useState("");
   useEffect(() => { document.title = "Administração · AppSoft Marketplace"; }, []);
   useEffect(() => {
-    if (!session) return;
+    if (!session || section !== "stores") return;
     const controller = new AbortController();
     setLoading(true); setError(""); setDenied(false);
     void adminService.list(query, controller.signal).then(result => { if (!controller.signal.aborted) setData(result); }).catch(error => {
       if (!controller.signal.aborted) { setError(error.message); setDenied(error instanceof ApiError && error.status === 403); setData(null); }
     }).finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
-  }, [session?.user.id, query, refresh]);
+  }, [session?.user.id, query, refresh, section]);
   if (!session) return <Navigate to="/login" replace />;
   const searchStores = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setQuery({ ...query, search: search.trim(), page: 1 }); };
   const saved = () => { setSelected(null); setNotice("Decisão salva e registrada no histórico."); setRefresh(value => value + 1); };
-  return <div className="site-shell"><header className="site-header"><Link to="/"><img src={logo} alt="AppSoft, início" /></Link><Link className="button secondary" to="/minha-conta">Minha conta</Link></header><main className="page-content">
+  return <div className="site-shell"><SiteHeader><Link className="button secondary" to="/minha-conta">Minha conta</Link></SiteHeader><main className="page-content"><nav className="admin-sections" aria-label="Áreas da administração"><button className={`button ${section === "stores" ? "primary" : "secondary"}`} aria-pressed={section === "stores"} onClick={() => setSection("stores")}>Lojas</button><button className={`button ${section === "customers" ? "primary" : "secondary"}`} aria-pressed={section === "customers"} onClick={() => setSection("customers")}>Clientes</button></nav>{section === "customers" ? <AdminCustomers /> : <>
     <div className="page-heading-row"><div className="page-heading"><p className="eyebrow">ADMINISTRAÇÃO</p><h1>Gestão de lojas</h1><p>Analise os cadastros e acompanhe a situação de cada loja.</p></div><button className="button secondary" disabled={loading} onClick={() => setRefresh(value => value + 1)}>Atualizar lista</button></div>
     {notice && <p className="notice success" role="status">{notice}</p>}
     {denied ? <section className="panel-card"><h2>Acesso restrito</h2><p role="alert">{error}</p><Link to="/minha-conta">Voltar para minha conta</Link></section> : <>
@@ -89,5 +91,5 @@ export default function AdminPage() {
       </section><p className="fine-print">Aprovação de cadastro e assinatura são etapas diferentes. O painel não gera cobranças.</p>
     </>}
     {selected && <ReviewDialog store={selected} onClose={() => setSelected(null)} onSaved={saved} />}
-  </main></div>;
+  </>}</main></div>;
 }

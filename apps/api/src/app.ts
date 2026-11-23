@@ -84,13 +84,20 @@ export function createApp(dependencies: Dependencies = { verifyUser, stores: sto
       }
       const adminAction = path.match(/^\/api\/admin\/stores\/([^/]+)\/(status|history)$/);
       const isList = path === "/api/admin/stores";
+      const isCustomers = path === "/api/admin/customers";
       const isProfile = path === "/api/me";
-      if (!["/api/stores", "/api/stores/mine"].includes(path) && !isList && !isProfile && !adminAction) { json(response, 404, { message: "Rota não encontrada." }); return; }
+      if (!["/api/stores", "/api/stores/mine"].includes(path) && !isList && !isCustomers && !isProfile && !adminAction) { json(response, 404, { message: "Rota não encontrada." }); return; }
       const allowed = path === "/api/stores" ? "POST" : adminAction?.[2] === "status" ? "PATCH" : "GET";
       if (request.method !== allowed) { response.setHeader("Allow", allowed); json(response, 405, { message: "Método não permitido." }); return; }
       const token = request.headers.authorization?.match(/^Bearer ([^\s]+)$/i)?.[1];
       if (!token) throw new HttpError(401, "Entre na sua conta para continuar.");
       const user = await dependencies.verifyUser(token);
+      if (isCustomers) {
+        const search = (url.searchParams.get("q") || "").trim();
+        const page = Number(url.searchParams.get("page") || 1);
+        if (search.length > 100 || !Number.isInteger(page) || page < 1 || page > 100000) throw new HttpError(400, "Filtros inválidos.");
+        json(response, 200, await admin.customers(user, { search, page })); return;
+      }
       if (isProfile) { json(response, 200, { role: await admin.profile(user) }); return; }
       if (isList) { json(response, 200, await admin.list(user, adminQuery(url))); return; }
       if (adminAction) {
