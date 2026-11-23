@@ -17,6 +17,7 @@ import { PublicStorePage } from "./pages/PublicStorePage";
 import { PublicProductPage } from "./pages/PublicProductPage";
 import HomePage from "./pages/HomePage";
 import AccountPage from "./pages/AccountPage";
+import { SiteFooter } from "./components/layout/SiteFooter";
 
 function AppRoutes() {
   const { loading, recovery } = useAuth();
@@ -50,4 +51,4 @@ function AppRoutes() {
     <Route path="*" element={<main className="loading-screen"><h1>Página não encontrada</h1><Link className="button primary" to="/">Voltar ao início</Link></main>} />
   </Routes>;
 }
-export default function App() { return <CartProvider><AppRoutes /></CartProvider>; }
+export default function App() { return <CartProvider><div className="app-layout"><div className="app-page"><AppRoutes /></div><SiteFooter /></div></CartProvider>; }

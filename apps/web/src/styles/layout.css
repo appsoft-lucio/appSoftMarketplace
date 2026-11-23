@@ -4,11 +4,8 @@
   padding: 0 var(--space-28);
 }
 
-.site-footer {
-  padding: var(--space-32) 0;
-  color: var(--color-footer-text);
-  font-size: var(--font-size-sm);
-}
+.app-layout { min-height: 100svh; display: flex; flex-direction: column; }
+.app-page { flex: 1; min-width: 0; }
 
 @media (max-width: 480px) {
   .site-shell {
