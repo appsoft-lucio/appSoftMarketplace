@@ -1,7 +1,7 @@
 export interface Category { id: string; name: string; slug: string; parent_id: string | null }
 export interface CatalogStore { id: string; name: string; slug: string }
 export interface CatalogProduct {
-  id: string; name: string; description: string; price_cents: number;
+  id: string; name: string; description: string; price_cents: number; original_price_cents?: number;
   store_id: string; store_name: string; store_slug: string; image_url: string | null; sizes: string[];
 }
 export interface CatalogResult {

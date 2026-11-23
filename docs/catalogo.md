@@ -36,10 +36,11 @@ Não altera o estado de aprovação das lojas existentes.
 
 ## Limites desta etapa
 
-Cadastro/edição de produtos, upload de fotos, gestão das variações, carrinho e checkout
-ainda serão implementados. O catálogo pode estar vazio até haver produtos elegíveis.
+Cadastro/edição de produtos, upload de fotos e gestão das variações estão no
+[painel de produtos](produtos.md). O [carrinho](navegacao-publica.md) permite cotar
+itens; o checkout ainda será implementado. O catálogo pode estar vazio até haver produtos elegíveis.
 Não há produtos fictícios para esconder esse estado. Produtos com tamanhos deverão
-ser cadastrados pelo futuro editor com a quantidade de cada variação; o estoque de
+ser cadastrados pelo editor com a quantidade de cada variação; o estoque de
 checkout também deverá reservar a variação específica em transação.
 
 A hierarquia é uma taxonomia inicial versionada; a edição pelo administrador não faz

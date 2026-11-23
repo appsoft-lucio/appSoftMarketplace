@@ -1,6 +1,6 @@
 import type { CatalogProduct } from "./catalog.js";
 export interface CartItem { productId: string; size: string | null; quantity: number }
-export interface PublicProduct extends CatalogProduct { stock: number; variants: Array<{ size: string; stock: number }> }
+export interface PublicProduct extends CatalogProduct { stock: number; images?: string[]; brand?: string; shipping_mode?: string; shipping_price_cents?: number | null; shipping_notes?: string; delivery_days?: number | null; variants: Array<{ size: string; stock: number }> }
 export interface PublicStore { id: string; name: string; slug: string; description: string; logo_url: string | null; city: string; state: string }
 export interface StoreDirectory { stores: PublicStore[]; total: number; page: number; pageSize: number }
 export interface CartLine extends CartItem { product: PublicProduct | null; error: string | null; maxQuantity: number; lineTotalCents: number | null }

@@ -1,3 +1,4 @@
+const ProductsPage = lazy(() => import("./pages/ProductsPage"));
 import { lazy, Suspense } from "react";
 import { Link, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { CartProvider } from "./cart/CartProvider";
@@ -36,6 +37,7 @@ function AppRoutes() {
     <Route path="/carrinho" element={<CartPage />} />
     <Route path="/finalizar-compra" element={<CheckoutPage />} />
     <Route path="/minhas-lojas" element={<MyStoresPage />} />
+    <Route path="/minhas-lojas/:storeId/produtos" element={<Suspense fallback={<main role="status">Carregando produtos…</main>}><ProductsPage /></Suspense>} />
     <Route path="/minhas-lojas/nova" element={<StoreRegistrationPage />} />
     <Route path="/lojas/nova" element={<Navigate to="/minhas-lojas/nova" replace />} />
     <Route path="/minha-conta" element={<AccountPage />} />

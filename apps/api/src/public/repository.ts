@@ -18,7 +18,8 @@ export async function publicStore(db: Database, slug: string): Promise<PublicSto
 export async function publicProducts(db: Database, ids: string[]): Promise<PublicProduct[]> {
   if (!ids.length) return [];
   const result = await db.query<PublicProduct>(`WITH available AS (${availableProductsSql})
-    SELECT p.id, p.name, p.description, p.price_cents, p.store_id, p.store_name, p.store_slug, p.stock,
+    SELECT p.id, p.name, p.description, p.price_cents, p.original_price_cents, p.shipping_mode,p.shipping_price_cents,p.shipping_notes,p.delivery_days,p.brand, p.store_id, p.store_name, p.store_slug, p.stock,
+    coalesce((SELECT jsonb_agg(url ORDER BY position) FROM marketplace_v2.product_images WHERE product_id=p.id),'[]'::jsonb) AS images,
     (SELECT url FROM marketplace_v2.product_images WHERE product_id = p.id ORDER BY position LIMIT 1) AS image_url,
     coalesce((SELECT jsonb_agg(v.size ORDER BY v.size) FROM marketplace_v2.product_variants v WHERE v.product_id = p.id AND v.stock > 0), '[]'::jsonb) AS sizes,
     coalesce((SELECT jsonb_agg(jsonb_build_object('size', v.size, 'stock', v.stock) ORDER BY v.size) FROM marketplace_v2.product_variants v WHERE v.product_id = p.id), '[]'::jsonb) AS variants

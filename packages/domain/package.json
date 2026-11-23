@@ -20,6 +20,10 @@
                                       "types":  "./src/catalog.ts",
                                       "default":  "./dist/catalog.js"
                                   },
+                    "./products": {
+                                      "types": "./src/products.ts",
+                                      "default": "./dist/products.js"
+                                  },
                     "./cart":  {
                                    "types":  "./src/cart.ts",
                                    "default":  "./dist/cart.js"

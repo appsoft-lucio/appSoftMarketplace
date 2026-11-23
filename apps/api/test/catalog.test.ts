@@ -13,7 +13,7 @@ import { createApp } from "../src/app.ts";
 
 test("catálogo: subcategorias, filtros combinados e somente lojas/produtos disponíveis", async t => {
   const db = new PGlite(); t.after(() => db.close());
-  for (const name of ["001_initial.sql", "002_store_registration.sql", "003_store_admin.sql", "004_catalog_filters.sql"]) await db.exec((await readFile(new URL(`../../../database/migrations/${name}`, import.meta.url), "utf8")).replace(/^\uFEFF/, ""));
+  for (const name of ["001_initial.sql", "002_store_registration.sql", "003_store_admin.sql", "004_catalog_filters.sql", "005_product_management.sql"]) await db.exec((await readFile(new URL(`../../../database/migrations/${name}`, import.meta.url), "utf8")).replace(/^\uFEFF/, ""));
   const stores = await db.query<{ id: string }>("INSERT INTO marketplace_v2.stores (name, slug, status) VALUES ('Moda Ana', 'moda-ana', 'approved'), ('Calçados Bia', 'calcados-bia', 'approved'), ('Vencida', 'vencida', 'approved'), ('Suspensa', 'suspensa', 'suspended') RETURNING id");
   const [a, b, expired, suspended] = stores.rows.map(row => row.id);
   for (const id of [a, b, expired, suspended]) await db.query("INSERT INTO marketplace_v2.subscriptions (store_id, billing_months, status, starts_at, ends_at) VALUES ($1, 1, 'active', now() - interval '2 months', CASE WHEN $1::uuid = $2::uuid THEN now() - interval '1 day' ELSE now() + interval '1 month' END)", [id, expired]);

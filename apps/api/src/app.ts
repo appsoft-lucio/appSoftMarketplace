@@ -1,3 +1,5 @@
+import { productService } from "./products/service.ts";
+import { productUuid, validateProduct } from "@appsoft/domain/products";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { publicService } from "./public/service.ts";
 import { parseCart } from "@appsoft/domain/cart";
@@ -10,19 +12,19 @@ import { validateStore } from "@appsoft/domain/stores";
 import { validateStoreReview } from "@appsoft/domain/admin";
 import type { AdminStoreQuery } from "@appsoft/domain/admin";
 
-type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService };
+type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService; products?: typeof productService };
 function json(response: ServerResponse, status: number, body: unknown) {
   response.writeHead(status);
   response.end(JSON.stringify(body));
 }
-async function readBody(request: IncomingMessage): Promise<unknown> {
+async function readBody(request: IncomingMessage, limit = 8192): Promise<unknown> {
   if (!request.headers["content-type"]?.startsWith("application/json")) throw new HttpError(415, "Envie os dados em JSON.");
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of request) {
     const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
     size += bytes.length;
-    if (size > 8192) throw new HttpError(413, "Os dados enviados excedem o limite.");
+    if (size > limit) throw new HttpError(413, "Os dados enviados excedem o limite.");
     chunks.push(bytes);
   }
   try { return JSON.parse(Buffer.concat(chunks).toString("utf8")); }
@@ -81,6 +83,22 @@ export function createApp(dependencies: Dependencies = { verifyUser, stores: sto
         const page = Number(url.searchParams.get("page") || 1);
         if (search.length > 100 || !Number.isInteger(page) || page < 1 || page > 100000) throw new HttpError(400, "Filtros inválidos.");
         json(response, 200, await service.stores(search, page)); return;
+      }
+      const productRoute = path.match(/^\/api\/stores\/([^/]+)\/products(?:\/([^/]+))?$/);
+      if (productRoute) {
+        const [,storeId,productId] = productRoute;
+        if (!productUuid.test(storeId) || (productId && !productUuid.test(productId))) throw new HttpError(400,"Identificador inválido.");
+        const allowed = productId ? ["PUT"] : ["GET","POST"];
+        if (!allowed.includes(request.method || "")) { response.setHeader("Allow",allowed.join(", ")); json(response,405,{message:"M?todo não permitido."}); return; }
+        const token = request.headers.authorization?.match(/^Bearer ([^\s]+)$/i)?.[1];
+        if (!token) throw new HttpError(401,"Entre na sua conta para continuar.");
+        const user = await dependencies.verifyUser(token);
+        let input;
+        if (request.method !== "GET") {
+          const body = await readBody(request, 4 * 1024 * 1024);
+          try { input = validateProduct(body); } catch(error) { throw new HttpError(400,(error as Error).message); }
+        }
+        json(response,request.method === "POST" ? 201 : 200,await (dependencies.products || productService).execute(user,storeId,input,productId || null)); return;
       }
       const adminAction = path.match(/^\/api\/admin\/stores\/([^/]+)\/(status|history)$/);
       const isList = path === "/api/admin/stores";
