@@ -1,5 +1,5 @@
-const MAX_SIDE = 1200;
-const MAX_BYTES = 200 * 1024;
+const MAX_SIDE = 1000;
+const MAX_BYTES = 100 * 1024;
 
 /** Reduce dimensions and encoded size before a photo enters the product form. */
 export async function prepareProductImage(file: Blob): Promise<string> {
@@ -22,20 +22,24 @@ export async function prepareProductImage(file: Blob): Promise<string> {
       context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
       for (const quality of [0.82, 0.72, 0.62]) {
         const blob = await new Promise<Blob>((resolve, reject) => {
+          canvas.toBlob(value => value ? resolve(value) : reject(new Error("Não foi possível comprimir a foto.")), "image/webp", quality);
+        });
+        // Browsers without WebP encoding can return PNG; fall back to compressed JPEG.
+        const encoded = blob.type === "image/webp" ? blob : await new Promise<Blob>((resolve, reject) => {
           canvas.toBlob(value => value ? resolve(value) : reject(new Error("Não foi possível comprimir a foto.")), "image/jpeg", quality);
         });
-        if (blob.size <= MAX_BYTES) {
+        if (encoded.size <= MAX_BYTES) {
           return await new Promise<string>((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => resolve(String(reader.result));
             reader.onerror = () => reject(new Error("Não foi possível ler a foto."));
-            reader.readAsDataURL(blob);
+            reader.readAsDataURL(encoded);
           });
         }
       }
       side = Math.floor(side * 0.8);
     }
-    throw new Error("Não foi possível reduzir a foto para 200 KB. Escolha outra imagem.");
+    throw new Error("Não foi possível reduzir a foto para 100 KB. Escolha outra imagem.");
   } finally {
     bitmap.close();
     canvas.width = 0;

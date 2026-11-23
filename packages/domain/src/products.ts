@@ -34,6 +34,13 @@ export function validateProduct(value: unknown): ProductInput {
       if (!/^[A-Za-z0-9+/]+={0,2}$/.test(base64) || base64.length % 4 !== 0 || !base64.startsWith("/9j/")) throw new Error("Foto JPEG inválida.");
       return raw;
     }
+    if (raw.startsWith("data:image/webp;base64,")) {
+      const base64 = raw.slice(23);
+      if (!/^[A-Za-z0-9+/]+={0,2}$/.test(base64) || base64.length % 4 !== 0 || base64.length > Math.ceil(100 * 1024 / 3) * 4) throw new Error("Foto WebP inválida ou maior que 100 KB.");
+      const header = atob(base64.slice(0, 16));
+      if (!header.startsWith("RIFF") || header.slice(8, 12) !== "WEBP") throw new Error("Foto WebP inválida.");
+      return raw;
+    }
     let url: URL; try { url = new URL(raw); } catch { throw new Error("Informe uma URL v?lida para a foto."); }
     if (url.protocol !== "https:" || url.username || url.password) throw new Error("As fotos devem usar HTTPS.");
     return url.href;

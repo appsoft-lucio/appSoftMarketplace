@@ -9,6 +9,8 @@ import type { Database } from "../src/stores/repository.ts";
 import { catalog } from "../src/catalog/repository.ts";
 import { parseCatalogQuery } from "@appsoft/domain/catalog";
 import { cartQuote } from "../src/public/repository.ts";
+import { publicProducts } from "../src/public/repository.ts";
+import { publicImage } from "../src/public/images.ts";
 import { createServer } from "node:http";
 import type { AddressInfo } from "node:net";
 import { createApp } from "../src/app.ts";
@@ -47,9 +49,22 @@ test("produtos: autorização, edição, promoção, variações e limite do pla
   await assert.rejects(saveProduct(adapter,store.id,null,input), /Limite de produtos ativos/);
   const draft=await saveProduct(adapter,store.id,null,{...input,active:false});
   assert.equal(draft.active,false);
+  const jpeg=Buffer.concat([Buffer.from([0xff,0xd8,0xff]),Buffer.alloc(15000)]);
+  const uploaded=`data:image/jpeg;base64,${jpeg.toString("base64")}`;
+  await db.query("UPDATE marketplace_v2.product_images SET url=$1 WHERE product_id=$2",[uploaded,created.id]);
+  const imageId=(await db.query<{id:string}>("SELECT id FROM marketplace_v2.product_images WHERE product_id=$1",[created.id])).rows[0].id;
+  const publicProduct=(await publicProducts(adapter,[created.id]))[0];
+  assert.equal(publicProduct.image_url,`/api/public/images/${imageId}`);
+  assert.equal(publicProduct.images?.[0],publicProduct.image_url);
+  assert.ok(!JSON.stringify(publicProduct).includes("base64"));
+  assert.deepEqual((await cartQuote(adapter,[{productId:created.id,size:null,quantity:1}])).items[0].product?.images,[]);
+  const catalogData=await catalog(adapter,parseCatalogQuery(new URLSearchParams()));
+  assert.ok(!JSON.stringify(catalogData).includes("base64"));
+  assert.deepEqual((await publicImage(adapter,imageId))?.data,jpeg);
   const server = createServer(createApp({
     verifyUser: async () => owner,
     stores: { list: async () => [], create: async () => store },
+    image: id=>publicImage(adapter,id),
     products: { execute: (user,storeId,payload,id=null) => db.transaction(async tx => {
       const connection=tx as unknown as Database;
       await authorizeStore(connection,user.id,storeId);
@@ -60,6 +75,19 @@ test("produtos: autorização, edição, promoção, variações e limite do pla
   t.after(()=>new Promise<void>(resolve=>server.close(()=>resolve())));
   const base=`http://127.0.0.1:${(server.address() as AddressInfo).port}/api/stores`;
   const headers={"Content-Type":"application/json",Authorization:"Bearer owner"};
+  const imageUrl=base.replace("/api/stores",`/api/public/images/${imageId}`);
+  const imageResponse=await fetch(imageUrl);
+  assert.equal(imageResponse.status,200);
+  assert.equal(imageResponse.headers.get("content-type"),"image/jpeg");
+  assert.match(imageResponse.headers.get("cache-control") || "",/max-age=3600/);
+  assert.deepEqual(Buffer.from(await imageResponse.arrayBuffer()),jpeg);
+  const cached=await fetch(imageUrl,{headers:{"If-None-Match":imageResponse.headers.get("etag")!}});
+  assert.equal(cached.status,304);
+  const head=await fetch(imageUrl,{method:"HEAD"});
+  assert.equal(head.status,200); assert.equal((await head.arrayBuffer()).byteLength,0);
+  await db.query("UPDATE marketplace_v2.products SET active=false WHERE id=$1",[created.id]);
+  assert.equal((await fetch(imageUrl)).status,404);
+  await db.query("UPDATE marketplace_v2.products SET active=true WHERE id=$1",[created.id]);
   assert.equal((await fetch(`${base}/${store.id}/products`)).status,401);
   assert.equal((await fetch(`${base}/${otherStore.id}/products`,{headers})).status,404);
   assert.equal((await fetch(`${base}/${store.id}/products/${created.id}`,{method:"DELETE",headers})).status,405);

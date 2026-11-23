@@ -1,3 +1,4 @@
+import { publicImageUrlSql } from "./image-url.ts";
 import type { CartItem, CartQuote, PublicProduct, PublicStore, StoreDirectory } from "@appsoft/domain/cart";
 import type { Database } from "../stores/repository.ts";
 import { availableProductsSql } from "../catalog/repository.ts";
@@ -15,19 +16,19 @@ export async function storeDirectory(db: Database, search: string, page: number)
 export async function publicStore(db: Database, slug: string): Promise<PublicStore | null> {
   return (await db.query<PublicStore>(`WITH visible AS (${publicStoresSql}) SELECT ${publicStoreFields} FROM visible WHERE slug = $1`, [slug])).rows[0] || null;
 }
-export async function publicProducts(db: Database, ids: string[]): Promise<PublicProduct[]> {
+export async function publicProducts(db: Database, ids: string[], includeGallery = true): Promise<PublicProduct[]> {
   if (!ids.length) return [];
   const result = await db.query<PublicProduct>(`WITH available AS (${availableProductsSql})
     SELECT p.id, p.name, p.description, p.price_cents, p.original_price_cents, p.shipping_mode,p.shipping_price_cents,p.shipping_notes,p.delivery_days,p.brand, p.store_id, p.store_name, p.store_slug, p.stock,
-    coalesce((SELECT jsonb_agg(url ORDER BY position) FROM marketplace_v2.product_images WHERE product_id=p.id),'[]'::jsonb) AS images,
-    (SELECT url FROM marketplace_v2.product_images WHERE product_id = p.id ORDER BY position LIMIT 1) AS image_url,
+    ${includeGallery ? `coalesce((SELECT jsonb_agg(${publicImageUrlSql} ORDER BY i.position) FROM marketplace_v2.product_images i WHERE i.product_id=p.id),'[]'::jsonb)` : `'[]'::jsonb`} AS images,
+    (SELECT ${publicImageUrlSql} FROM marketplace_v2.product_images i WHERE i.product_id = p.id ORDER BY i.position LIMIT 1) AS image_url,
     coalesce((SELECT jsonb_agg(v.size ORDER BY v.size) FROM marketplace_v2.product_variants v WHERE v.product_id = p.id AND v.stock > 0), '[]'::jsonb) AS sizes,
     coalesce((SELECT jsonb_agg(jsonb_build_object('size', v.size, 'stock', v.stock) ORDER BY v.size) FROM marketplace_v2.product_variants v WHERE v.product_id = p.id), '[]'::jsonb) AS variants
     FROM available p WHERE p.id = ANY($1::uuid[])`, [ids]);
   return result.rows;
 }
 export async function cartQuote(db: Database, items: CartItem[]): Promise<CartQuote> {
-  const products = await publicProducts(db, [...new Set(items.map(item => item.productId))]);
+  const products = await publicProducts(db, [...new Set(items.map(item => item.productId))], false);
   const byId = new Map(products.map(product => [product.id, product]));
   const lines = items.map(item => {
     const product = byId.get(item.productId) || null;

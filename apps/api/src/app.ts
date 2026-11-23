@@ -1,3 +1,6 @@
+import { publicImage } from "./public/images.ts";
+import { getPool } from "./database.ts";
+import type { Database } from "./stores/repository.ts";
 import { productService } from "./products/service.ts";
 import { productUuid, validateProduct } from "@appsoft/domain/products";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -12,7 +15,7 @@ import { validateStore } from "@appsoft/domain/stores";
 import { validateStoreReview } from "@appsoft/domain/admin";
 import type { AdminStoreQuery } from "@appsoft/domain/admin";
 
-type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService; products?: typeof productService };
+type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService; products?: typeof productService; image?: (id: string) => ReturnType<typeof publicImage> };
 function json(response: ServerResponse, status: number, body: unknown) {
   response.writeHead(status);
   response.end(JSON.stringify(body));
@@ -48,6 +51,19 @@ export function createApp(dependencies: Dependencies = { verifyUser, stores: sto
       const path = url.pathname;
       if (request.method === "GET" && path === "/api/health") {
         json(response, 200, { status: "ok", service: "appsoft-api", database: process.env.DATABASE_URL ? "configured" : "not-configured" }); return;
+      }
+      const imageMatch = path.match(/^\/api\/public\/images\/([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})$/i);
+      if (imageMatch) {
+        if (request.method !== "GET" && request.method !== "HEAD") { response.setHeader("Allow", "GET, HEAD"); json(response,405,{message:"Method not allowed"}); return; }
+        const photo = await (dependencies.image ? dependencies.image(imageMatch[1]) : publicImage(getPool() as unknown as Database,imageMatch[1]));
+        if (!photo) throw new HttpError(404,"Foto indisponivel.");
+        const etag = `"${imageMatch[1].toLowerCase()}"`;
+        response.setHeader("Cache-Control","public, max-age=3600");
+        response.setHeader("ETag",etag);
+        response.setHeader("Content-Type",photo.contentType);
+        if (request.headers["if-none-match"] === etag) { response.writeHead(304); response.end(); return; }
+        response.setHeader("Content-Length",photo.data.length);
+        response.writeHead(200); response.end(request.method === "HEAD" ? undefined : photo.data); return;
       }
       if (path === "/api/catalog") {
         if (request.method !== "GET") { response.setHeader("Allow", "GET"); json(response, 405, { message: "Método não permitido." }); return; }

@@ -1,3 +1,4 @@
+import { publicImageUrlSql } from "../public/image-url.ts";
 import type { CatalogProduct, CatalogQuery, CatalogResult, CatalogStore, Category } from "@appsoft/domain/catalog";
 import type { Database } from "../stores/repository.ts";
 
@@ -20,7 +21,7 @@ export async function catalog(db: Database, query: CatalogQuery): Promise<Catalo
   const order = { recent: "p.created_at DESC, p.id", price_asc: "p.price_cents ASC, p.id", price_desc: "p.price_cents DESC, p.id" }[query.sort];
   const [products, total, categories, stores, sizes] = await Promise.all([
     db.query<CatalogProduct>(`${cte} SELECT p.id, p.name, p.description, p.price_cents, p.original_price_cents, p.store_id, p.store_name, p.store_slug,
-      (SELECT i.url FROM marketplace_v2.product_images i WHERE i.product_id = p.id ORDER BY i.position LIMIT 1) AS image_url,
+      (SELECT ${publicImageUrlSql} FROM marketplace_v2.product_images i WHERE i.product_id = p.id ORDER BY i.position LIMIT 1) AS image_url,
       coalesce((SELECT jsonb_agg(v.size ORDER BY v.size) FROM marketplace_v2.product_variants v WHERE v.product_id = p.id AND v.stock > 0), '[]'::jsonb) AS sizes
       FROM available p WHERE ${where} ORDER BY ${order} LIMIT $7 OFFSET $8`, [...params, pageSize, (query.page - 1) * pageSize]),
     db.query<{ total: number }>(`${cte} SELECT count(*)::int AS total FROM available p WHERE ${where}`, params),

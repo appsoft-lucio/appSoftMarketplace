@@ -12,8 +12,9 @@ catálogo da própria loja. Rota: `/minhas-lojas/:storeId/produtos`.
   que o preço normal. Apagar o preço promocional encerra a oferta. Catálogo,
   filtros, ordenação e cotação do carrinho usam o preço vigente.
 - Até oito fotos com upload JPG/PNG/WebP ou link HTTPS. A primeira é a capa;
-  pode-se trocar a capa e remover fotos. O navegador reduz uploads para JPEG
-  de até 1200 pixels no maior lado e 200 KB por imagem, mantendo a proporção.
+  pode-se trocar a capa e remover fotos. O navegador reduz uploads para WebP
+  (JPEG quando o navegador não codifica WebP), de até 1000 pixels no maior lado
+  e 100 KB por imagem, mantendo a proporção. O arquivo original não é enviado.
   Qualidade e dimensões são ajustadas progressivamente até atingir o limite.
   Links HTTPS externos mantêm o arquivo hospedado na origem; para garantir
   a otimização, prefira enviar o arquivo pelo campo de upload.
@@ -41,9 +42,22 @@ As rotas exigem token verificado e associação explícita à loja. A autorizaç
 a gravação do produto e a substituição de fotos/variações ocorrem na mesma
 transação, serializada pela loja. Categoria e identificadores são validados.
 
-Uploads são persistidos como URLs de dados JPEG em `product_images`, junto
+Uploads são persistidos como URLs de dados WebP/JPEG em `product_images`, junto
 dos links externos; não exigem bucket. Substituir por armazenamento de objetos
 quando o volume crescer: o editor atualmente carrega todas as fotos da loja.
+
+Nas APIs públicas, catálogo, produto e carrinho recebem apenas URLs curtas,
+sem as fotos codificadas no JSON. `/api/public/images/:id` entrega os bytes
+com cache de uma hora e ETag (304 na revalidação). A consulta só permite fotos
+de produtos disponíveis e lojas visíveis. Fotos de rascunhos não são públicas.
+O catálogo e a galeria usam carregamento adiado e decodificação assíncrona;
+o carrinho não recebe a galeria completa. A logo do cabeçalho usa uma versão
+reduzida, preservando o original no repositório.
+
+Os novos limites valem para novos uploads. Fotos antigas não são recomprimidas
+automaticamente; reenviá-las aplica a otimização. O limite de 100 KB é do arquivo
+codificado; a representação base64 armazenada ocupa aproximadamente um terço
+a mais. O cache público pode manter uma imagem já visitada por até uma hora.
 
 ## Ativação
 
