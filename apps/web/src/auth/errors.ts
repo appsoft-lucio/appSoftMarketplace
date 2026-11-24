@@ -1,7 +1,7 @@
 const messages: Record<string, string> = {
   invalid_credentials: "E-mail ou senha incorretos.",
   email_not_confirmed: "Confirme seu e-mail antes de entrar. Você pode solicitar outro link abaixo.",
-  weak_password: "Escolha uma senha mais forte, com pelo menos 12 caracteres.",
+  weak_password: "Escolha uma senha mais forte, com pelo menos 6 caracteres.",
   same_password: "A nova senha deve ser diferente da senha atual.",
   over_email_send_rate_limit: "Aguarde alguns minutos antes de solicitar outro e-mail.",
   over_request_rate_limit: "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
@@ -11,7 +11,8 @@ const messages: Record<string, string> = {
   bad_code_verifier: "Abra o link no navegador em que você fez a solicitação ou solicite outro.",
   signup_disabled: "Novos cadastros estão temporariamente indisponíveis.",
   email_address_invalid: "Informe um endereço de e-mail válido.",
-  user_already_exists: "Não foi possível concluir o cadastro. Tente entrar ou recuperar sua senha.",
+  user_already_exists: "Este e-mail já possui uma conta. Entre ou recupere sua senha. A mesma conta pode comprar e vender.",
+  email_exists: "Este e-mail já possui uma conta. Entre ou recupere sua senha. A mesma conta pode comprar e vender.",
 };
 export function authErrorMessage(error: unknown): string {
   const code = typeof error === "object" && error !== null && "code" in error ? String(error.code) : "";

@@ -1,3 +1,4 @@
+import { loginService } from "./login/service.ts";
 import { appearanceService } from "./appearance/service.ts";
 import { publicImage } from "./public/images.ts";
 import { getPool } from "./database.ts";
@@ -18,7 +19,7 @@ import { validateStore } from "@appsoft/domain/stores";
 import { validateStoreReview } from "@appsoft/domain/admin";
 import type { AdminStoreQuery } from "@appsoft/domain/admin";
 
-type Dependencies = { appearance?: typeof appearanceService; verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService; products?: typeof productService; image?: (id: string) => ReturnType<typeof publicImage>; checkout?: typeof checkoutService };
+type Dependencies = { login?: typeof loginService; appearance?: typeof appearanceService; verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService; products?: typeof productService; image?: (id: string) => ReturnType<typeof publicImage>; checkout?: typeof checkoutService };
 function json(response: ServerResponse, status: number, body: unknown) {
   response.writeHead(status);
   response.end(JSON.stringify(body));
@@ -54,6 +55,20 @@ export function createApp(dependencies: Dependencies = { verifyUser, stores: sto
       const path = url.pathname;
       if (request.method === "GET" && path === "/api/health") {
         json(response, 200, { status: "ok", service: "appsoft-api", database: process.env.DATABASE_URL ? "configured" : "not-configured" }); return;
+      }
+      if (path === "/api/auth/username/check" || path === "/api/auth/username/login" || path === "/api/me/username") {
+        const service = dependencies.login || loginService;
+        const profile = path === "/api/me/username";
+        const allowed = profile ? ["GET", "PUT"] : ["POST"];
+        if (!allowed.includes(request.method || "")) { response.setHeader("Allow", allowed.join(", ")); json(response, 405, { message: "Método não permitido." }); return; }
+        if (profile) {
+          const token = request.headers.authorization?.match(/^Bearer ([^\s]+)$/i)?.[1];
+          if (!token) throw new HttpError(401, "Entre na sua conta para continuar.");
+          const user = await dependencies.verifyUser(token);
+          json(response, 200, request.method === "GET" ? await service.profile(user) : await service.save(user, await readBody(request))); return;
+        }
+        const body = await readBody(request);
+        json(response, 200, path.endsWith("/check") ? await service.available(body) : await service.login(body)); return;
       }
       if (path === "/api/appearance" || path === "/api/admin/appearance" || path === "/api/appearance/manifest") {
         const service = dependencies.appearance || appearanceService;

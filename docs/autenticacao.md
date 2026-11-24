@@ -6,7 +6,7 @@
 - Confirmação e reenvio de confirmação por e-mail.
 - Login, sessão restaurada pelo SDK, página Minha conta e saída desta sessão.
 - Solicitação de recuperação, callback e definição da nova senha.
-- Senha nova com mínimo de 12 caracteres, confirmação e opção de mostrar/ocultar.
+- Senha nova com mínimo de 6 caracteres, confirmação e opção de mostrar/ocultar.
 - Mensagens em português, carregamento, erros e formulários bloqueados sem configuração.
 
 A autenticação usa o SDK oficial do Supabase com PKCE. Os links devem ser abertos
@@ -29,12 +29,12 @@ Para projetos com chave legada, use a chave **anon** no mesmo campo ou em
 DATABASE_URL em uma variável VITE_. Essas variáveis entram no JavaScript público.
 
 Reinicie `npm run dev` depois de salvar. Sem esses valores, as telas abrem,
-mas não executam chamadas de cadastro ou login. A API Node não recebe senhas.
+mas não executam chamadas de cadastro ou login. O login por e-mail segue direto ao Supabase. O login por usuário passa pela API Node, que encaminha a senha ao Supabase sem gravá-la nem registrá-la em logs.
 
 ## 2. Configuração no Supabase
 
 Em Authentication, habilite autenticação por e-mail/senha, novos cadastros e
-confirmação de e-mail. Alinhe o mínimo de senha a 12 caracteres no provedor.
+confirmação de e-mail. Alinhe o mínimo de senha a 6 caracteres no provedor.
 
 Em URL Configuration, configure o Site URL de produção e autorize os callbacks exatos:
 
@@ -107,3 +107,26 @@ continuidade da mesma sessão na aba; falhas no callback bloqueiam o formulário
 - https://supabase.com/docs/guides/auth/redirect-urls
 - https://supabase.com/docs/guides/auth/sessions/pkce-flow
 - https://supabase.com/docs/guides/auth/auth-smtp
+
+## Nome de usuário
+
+O cadastro solicita um nome único, compartilhado por clientes e lojistas.
+São permitidos de 3 a 30 caracteres: letras ASCII, números, ponto, hífen e sublinhado,
+começando com letra ou número. Espaços externos são removidos e o nome fica em minúsculas.
+
+Aplicar a migração 008_login_names.sql antes de publicar esta versão. A exclusividade
+é garantida pela tabela privada marketplace_v2.login_names. Um trigger transacional
+reserva o nome junto da criação em auth.users; colisões desfazem o cadastro inteiro.
+Alterar user_metadata não troca o usuário reservado. A tabela não concede acesso ao navegador.
+
+Contas antigas continuam entrando com e-mail e podem escolher ou trocar o usuário
+em Minha conta. GET/PUT /api/me/username valida a sessão e só opera na conta autenticada.
+POST /api/auth/username/check retorna somente a disponibilidade do nome.
+POST /api/auth/username/login verifica a senha no Supabase e devolve apenas os tokens
+da sessão; não devolve o e-mail associado. O SDK valida/restaura a sessão com setSession.
+As respostas usam no-store, e tentativas por usuário são limitadas no banco.
+
+E-mails continuam únicos no Supabase, independentemente da preferência cliente/lojista.
+Os formulários normalizam e-mail para minúsculas e apresentam orientação para usar
+a conta existente quando o provedor informa duplicidade. O provedor pode ocultar
+a existência de uma conta e devolver uma resposta genérica de cadastro.

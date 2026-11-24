@@ -8,7 +8,7 @@
                               "types":  "./src/index.ts",
                               "default":  "./dist/index.js"
                           },
-                    "./appearance": { "types": "./src/appearance.ts", "default": "./dist/appearance.js" }, "./stores":  {
+                    "./username": { "types": "./src/username.ts", "default": "./dist/username.js" }, "./appearance": { "types": "./src/appearance.ts", "default": "./dist/appearance.js" }, "./stores":  {
                                      "types":  "./src/stores.ts",
                                      "default":  "./dist/stores.js"
                                  },

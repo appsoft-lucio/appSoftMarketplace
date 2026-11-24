@@ -25,7 +25,7 @@ export function PasswordField({
           name={name}
           type={visible ? "text" : "password"}
           autoComplete={autoComplete}
-          minLength={strong ? 12 : undefined}
+          minLength={strong ? 6 : undefined}
           maxLength={128}
           required
           aria-describedby={strong ? `${id}-hint` : undefined}
@@ -39,7 +39,7 @@ export function PasswordField({
           {visible ? "Ocultar" : "Mostrar"}
         </button>
       </span>
-      {strong && <small id={`${id}-hint`}>Use pelo menos 12 caracteres. Prefira uma frase única.</small>}
+      {strong && <small id={`${id}-hint`}>Use pelo menos 6 caracteres. Prefira uma frase única.</small>}
     </div>
   );
 }
