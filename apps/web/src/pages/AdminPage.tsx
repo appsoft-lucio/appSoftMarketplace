@@ -1,3 +1,4 @@
+import { AdminAppearance } from "../appearance/AdminAppearance";
 import "./AdminPage.css";
 import { useEffect, useRef, useState } from "react";
 import type { FormEvent } from "react";
@@ -56,7 +57,7 @@ function ReviewDialog({ store, onClose, onSaved }: { store: AdminStore; onClose:
 }
 
 export default function AdminPage() {
-  const [section, setSection] = useState<"stores" | "customers">("stores");
+  const [section, setSection] = useState<"stores" | "customers" | "appearance">("stores");
   const { session } = useAuth();
   const [query, setQuery] = useState<AdminStoreQuery>({ status: "pending", search: "", page: 1 });
   const [search, setSearch] = useState("");
@@ -80,7 +81,7 @@ export default function AdminPage() {
   if (!session) return <Navigate to="/login" replace />;
   const searchStores = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setQuery({ ...query, search: search.trim(), page: 1 }); };
   const saved = () => { setSelected(null); setNotice("Decisão salva e registrada no histórico."); setRefresh(value => value + 1); };
-  return <div className="site-shell"><SiteHeader><Link className="button secondary" to="/minha-conta">Minha conta</Link></SiteHeader><main className="page-content"><nav className="admin-sections" aria-label="Áreas da administração"><button className={`button ${section === "stores" ? "primary" : "secondary"}`} aria-pressed={section === "stores"} onClick={() => setSection("stores")}>Lojas</button><button className={`button ${section === "customers" ? "primary" : "secondary"}`} aria-pressed={section === "customers"} onClick={() => setSection("customers")}>Clientes</button></nav>{section === "customers" ? <AdminCustomers /> : <>
+  return <div className="site-shell"><SiteHeader><Link className="button secondary" to="/minha-conta">Minha conta</Link></SiteHeader><main className="page-content"><nav className="admin-sections" aria-label="Áreas da administração"><button className={`button ${section === "stores" ? "primary" : "secondary"}`} aria-pressed={section === "stores"} onClick={() => setSection("stores")}>Lojas</button><button className={`button ${section === "customers" ? "primary" : "secondary"}`} aria-pressed={section === "customers"} onClick={() => setSection("customers")}>Clientes</button><button className={`button ${section === "appearance" ? "primary" : "secondary"}`} aria-pressed={section === "appearance"} onClick={() => setSection("appearance")}>Aparência</button></nav>{section === "appearance" ? <AdminAppearance /> : section === "customers" ? <AdminCustomers /> : <>
     <div className="page-heading-row"><div className="page-heading"><p className="eyebrow">ADMINISTRAÇÃO</p><h1>Gestão de lojas</h1><p>Analise os cadastros e acompanhe a situação de cada loja.</p></div><button className="button secondary" disabled={loading} onClick={() => setRefresh(value => value + 1)}>Atualizar lista</button></div>
     {notice && <p className="notice success" role="status">{notice}</p>}
     {denied ? <section className="panel-card"><h2>Acesso restrito</h2><p role="alert">{error}</p><Link to="/minha-conta">Voltar para minha conta</Link></section> : <>

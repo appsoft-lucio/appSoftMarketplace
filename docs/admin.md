@@ -64,3 +64,25 @@ no banco. Usa `auth.users` como origem para incluir compradores sem loja, com
 associação opcional ao perfil local. Exclui contas excluídas e anônimas. Retorna
 apenas os campos necessários; senhas, tokens e metadados completos não são enviados.
 É uma consulta somente leitura e não requer nova migração.
+
+## Aparência do marketplace
+
+Em **Administração → Aparência**, selecione **Original**, **Natal** ou **Ano Novo** e clique em **Aplicar tema**.
+A seleção só vira pública depois de salva; as amostras não alteram a vitrine.
+A configuração é global e persistida no banco, com data e administrador responsável pela última alteração.
+A API valida a permissão de administrador; contas comuns não podem consultar a configuração administrativa nem alterá-la.
+
+- Original: laranja e grafite, sem decoração sazonal.
+- Natal: vermelho e verde, faixa de boas festas e ícone de gorro.
+- Ano Novo: dourado e grafite, faixa comemorativa e ícone com estrelas.
+
+As páginas abertas consultam o tema a cada 10 minutos e quando voltam ao primeiro plano, sem recarregar formulários.
+O ícone e a cor da aba acompanham a seleção. O manifesto de instalação também fornece o ícone do tema ativo;
+o prazo para trocar o ícone de apps já instalados depende do navegador e do sistema operacional.
+
+Antes de publicar, aplicar **database/migrations/007_appearance.sql** no banco correto.
+Ela cria uma configuração inicial Original, habilita RLS e não concede acesso direto pelo navegador.
+Sem essa migração, o painel não consegue carregar nem salvar a aparência; a vitrine mantém seu visual original.
+
+Os SVGs editáveis estão em imagens/marketplace-icon-{original,christmas,new-year}.svg.
+Para gerar os PNGs de 192 e 512 px no Windows, execute scripts/render-theme-icons.ps1.

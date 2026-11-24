@@ -1,3 +1,4 @@
+import { AppearanceProvider } from "./appearance/AppearanceProvider";
 const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 const ShippingPage = lazy(() => import("./pages/ShippingPage"));
 const OrdersPage = lazy(() => import("./pages/OrdersPage"));
@@ -51,4 +52,4 @@ function AppRoutes() {
     <Route path="*" element={<main className="loading-screen"><h1>Página não encontrada</h1><Link className="button primary" to="/">Voltar ao início</Link></main>} />
   </Routes>;
 }
-export default function App() { return <CartProvider><div className="app-layout"><div className="app-page"><AppRoutes /></div><SiteFooter /></div></CartProvider>; }
+export default function App() { return <AppearanceProvider><CartProvider><div className="app-layout"><div className="app-page"><AppRoutes /></div><SiteFooter /></div></CartProvider></AppearanceProvider>; }

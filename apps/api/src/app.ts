@@ -1,3 +1,4 @@
+import { appearanceService } from "./appearance/service.ts";
 import { publicImage } from "./public/images.ts";
 import { getPool } from "./database.ts";
 import type { Database } from "./stores/repository.ts";
@@ -17,7 +18,7 @@ import { validateStore } from "@appsoft/domain/stores";
 import { validateStoreReview } from "@appsoft/domain/admin";
 import type { AdminStoreQuery } from "@appsoft/domain/admin";
 
-type Dependencies = { verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService; products?: typeof productService; image?: (id: string) => ReturnType<typeof publicImage>; checkout?: typeof checkoutService };
+type Dependencies = { appearance?: typeof appearanceService; verifyUser: typeof verifyUser; stores: typeof storeService; admin?: typeof adminService; catalog?: typeof catalogService; public?: typeof publicService; products?: typeof productService; image?: (id: string) => ReturnType<typeof publicImage>; checkout?: typeof checkoutService };
 function json(response: ServerResponse, status: number, body: unknown) {
   response.writeHead(status);
   response.end(JSON.stringify(body));
@@ -53,6 +54,25 @@ export function createApp(dependencies: Dependencies = { verifyUser, stores: sto
       const path = url.pathname;
       if (request.method === "GET" && path === "/api/health") {
         json(response, 200, { status: "ok", service: "appsoft-api", database: process.env.DATABASE_URL ? "configured" : "not-configured" }); return;
+      }
+      if (path === "/api/appearance" || path === "/api/admin/appearance" || path === "/api/appearance/manifest") {
+        const service = dependencies.appearance || appearanceService;
+        const isAdmin = path === "/api/admin/appearance";
+        const allowed = isAdmin ? ["GET", "PUT"] : ["GET"];
+        if (!allowed.includes(request.method || "")) { response.setHeader("Allow", allowed.join(", ")); json(response, 405, { message: "Método não permitido." }); return; }
+        if (isAdmin) {
+          const token = request.headers.authorization?.match(/^Bearer ([^\s]+)$/i)?.[1];
+          if (!token) throw new HttpError(401, "Entre na sua conta para continuar.");
+          const user = await dependencies.verifyUser(token);
+          json(response, 200, request.method === "PUT" ? await service.save(user, await readBody(request)) : await service.readAdmin(user)); return;
+        }
+        const appearance = await service.get();
+        if (path.endsWith("/manifest")) {
+          response.setHeader("Content-Type", "application/manifest+json; charset=utf-8");
+          json(response, 200, { id: "/", name: "AppSoft Marketplace", short_name: "AppSoft", lang: "pt-BR", start_url: "/", scope: "/", display: "standalone", background_color: "#f7f8fa", theme_color: appearance.theme === "christmas" ? "#a82c35" : appearance.theme === "new-year" ? "#795717" : "#c3520a",
+            icons: [192, 512].map(size => ({ src: `/icons/${appearance.theme}/icon-${size}.png`, sizes: `${size}x${size}`, type: "image/png", purpose: "any" })) }); return;
+        }
+        json(response, 200, appearance); return;
       }
       const imageMatch = path.match(/^\/api\/public\/images\/([a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12})$/i);
       if (imageMatch) {

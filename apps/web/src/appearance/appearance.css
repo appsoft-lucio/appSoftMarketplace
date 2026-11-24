@@ -1,0 +1,53 @@
+﻿:root[data-theme="christmas"] {
+  --color-background: #faf7f2;
+  --color-primary: #a82c35;
+  --color-primary-hover: #86222a;
+  --color-link: #922630;
+  --color-focus: #a82c35;
+  --color-selected-surface: #fce9e8;
+  --color-selected-text: #922630;
+  --color-selected-border: #a82c35;
+  --color-brand-surface: #eaf2ec;
+  --color-brand-border: #ccdfd0;
+  --color-brand-label: #245a40;
+  --color-header-border: #dfd5c8;
+  --color-chip-surface: #eaf2ec;
+  --color-chip-text: #245a40;
+  --color-chip-border: #ccdfd0;
+}
+:root[data-theme="new-year"] {
+  --color-background: #faf9f4;
+  --color-primary: #795717;
+  --color-primary-hover: #5e4210;
+  --color-link: #795717;
+  --color-focus: #795717;
+  --color-selected-surface: #faf0d8;
+  --color-selected-text: #6b4c12;
+  --color-selected-border: #967122;
+  --color-brand-surface: #f4ecd8;
+  --color-brand-border: #dfcfa6;
+  --color-brand-label: #6b4c12;
+  --color-header-border: #dfcfa6;
+  --color-chip-surface: #faf0d8;
+  --color-chip-text: #6b4c12;
+  --color-chip-border: #dfcfa6;
+}
+.seasonal-banner { padding: 10px 20px; text-align: center; font-size: var(--font-size-sm); color: #fff; background: #245a40; }
+:root[data-theme="new-year"] .seasonal-banner { background: #202735; color: #f4d999; }
+.seasonal-banner > span { margin-right: 8px; color: #f4d999; }
+.appearance-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding: 0; border: 0; margin: 24px 0; }
+.appearance-options legend { font-weight: 600; margin-bottom: 12px; }
+.appearance-option { display: flex; flex-direction: column; gap: 16px; padding: 16px; border: 2px solid var(--color-border); border-radius: 16px; background: var(--color-surface); cursor: pointer; }
+.appearance-option.is-selected { border-color: var(--color-primary); }
+.appearance-option:focus-within { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+.theme-preview { display: flex; align-items: center; gap: 12px; padding: 20px 12px; background: #fff1e5; color: #873607; border-radius: 10px; font-weight: 700; }
+.theme-preview img { width: 56px; height: 56px; }
+.theme-preview small { font-weight: 400; }
+.theme-preview > span:last-child { margin-left: auto; }
+.theme-preview-christmas { background: #eaf2ec; color: #245a40; }
+.theme-preview-new-year { background: #202735; color: #f4d999; }
+.theme-option-title { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.theme-option-title input { width: 18px; height: 18px; accent-color: var(--color-primary); }
+.theme-option-title small { margin-left: auto; color: var(--color-text-muted); }
+.appearance-option > span:last-child { color: var(--color-text-muted); font-size: var(--font-size-sm); }
+@media (max-width: 800px) { .appearance-options { grid-template-columns: 1fr; } }
