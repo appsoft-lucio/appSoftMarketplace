@@ -2,6 +2,11 @@
 :root {
   color-scheme: light;
   --color-surface: #ffffff;
+  --color-header-border: #e8e2dc;
+  --color-header-glass: rgb(255 255 255 / .76);
+  --color-header-glass-border: rgb(255 255 255 / .85);
+  --shadow-header: 0 4px 20px rgb(32 39 53 / .035);
+  --shadow-header-scrolled: 0 8px 30px rgb(32 39 53 / .1);
   --color-backdrop: rgb(16 24 40 / .5);
   --color-text: #202735;
   --color-background: #f7f8fa;

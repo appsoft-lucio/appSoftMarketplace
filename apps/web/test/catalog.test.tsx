@@ -24,7 +24,8 @@ it("abre a vitrine na home sem conta e o logo retorna à home", async () => {
   render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
   expect(await screen.findByRole("heading", { name: "Vestido floral" })).toBeVisible();
   expect(screen.getByLabelText("Buscar produtos")).toBeVisible();
-  expect(screen.getByRole("link", { name: "Entrar" })).toBeVisible();
+  expect(screen.getByRole("link", { name: "Já tenho conta" })).toHaveAttribute("href", "/login");
+  expect(screen.getByRole("link", { name: "Cadastrar" })).toHaveAttribute("href", "/cadastro");
   expect(screen.queryByText("Um marketplace.")).not.toBeInTheDocument();
   await user.click(screen.getByRole("link", { name: "AppSoft, início" }));
   expect(screen.getByRole("heading", { name: "Vestido floral" })).toBeVisible();
