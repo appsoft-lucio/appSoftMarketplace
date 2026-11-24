@@ -1,6 +1,7 @@
+import { AppearanceProvider } from "../src/appearance/AppearanceProvider";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { CartProvider } from "../src/cart/CartProvider";
 import CatalogPage from "../src/pages/CatalogPage";
@@ -17,7 +18,7 @@ beforeEach(() => {
   HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
   HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
 });
-function open(query = "") { render(<MemoryRouter initialEntries={[`/catalogo${query}`]}><CartProvider><CatalogPage /></CartProvider></MemoryRouter>); }
+function open(query = "") { render(<MemoryRouter initialEntries={[`/catalogo${query}`]}><AppearanceProvider><CartProvider><CatalogPage /></CartProvider></AppearanceProvider></MemoryRouter>); }
 function lastParams() { return fake.load.mock.calls.at(-1)![0] as URLSearchParams; }
 it("abre a vitrine na home sem conta e o logo retorna à home", async () => {
   const user = userEvent.setup();
@@ -71,4 +72,31 @@ it("distingue catálogo vazio de falha no carregamento", async () => {
   fake.load.mockRejectedValue(new Error("Catálogo indisponível")); open();
   expect(await screen.findByRole("alert")).toHaveTextContent("Catálogo indisponível");
   expect(screen.queryByText("As novidades estão chegando")).not.toBeInTheDocument();
+});
+
+afterEach(() => { vi.unstubAllGlobals(); delete document.documentElement.dataset.theme; });
+it("mostra a campanha de Natal e aplica o orçamento ao catálogo", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ theme: "christmas" }) }));
+  const user = userEvent.setup();
+  render(<MemoryRouter initialEntries={["/"]}><App /></MemoryRouter>);
+  expect(await screen.findByRole("heading", { name: /Mais carinho em cada presente/ })).toBeVisible();
+  expect(screen.getByRole("link", { name: /Explorar presentes/ })).toHaveAttribute("href", "#catalog-products");
+  await user.click(screen.getByRole("link", { name: "Até R$ 50" }));
+  await waitFor(() => {
+    expect(lastParams().get("max")).toBe("50");
+    expect(lastParams().get("sort")).toBe("price_asc");
+  });
+  await user.click(screen.getByRole("link", { name: "Até R$ 100" }));
+  await waitFor(() => expect(lastParams().get("max")).toBe("100"));
+  for (const limit of [300, 500]) {
+    await user.click(screen.getByRole("link", { name: `Até R$ ${limit}` }));
+    await waitFor(() => expect(lastParams().get("max")).toBe(String(limit)));
+  }
+});
+it("não mostra a campanha natalina no tema de Ano Novo", async () => {
+  vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ theme: "new-year" }) }));
+  render(<MemoryRouter><App /></MemoryRouter>);
+  await screen.findByText(/Novos começos/);
+  expect(screen.queryByRole("heading", { name: /Mais carinho em cada presente/ })).not.toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Encontre o que combina com você." })).toBeVisible();
 });

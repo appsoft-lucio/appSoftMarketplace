@@ -6,7 +6,7 @@ import "./appearance.css";
 
 export const themeDetails = {
   original: { name: "Original", color: "#c3520a", message: "", description: "A identidade AppSoft em laranja, branco e grafite." },
-  christmas: { name: "Natal", color: "#a82c35", message: "Boas festas! Encontre o presente ideal no comércio local.", description: "Vermelho, verde e detalhes de Natal com o ícone de gorro." },
+  christmas: { name: "Natal", color: "#a82c35", message: "Boas festas! Encontre o presente ideal no comércio local.", description: "Vermelho, verde e dourado, vitrine natalina e atalhos para presentes." },
   "new-year": { name: "Ano Novo", color: "#795717", message: "Novos começos, boas escolhas. Feliz Ano Novo!", description: "Dourado, grafite e estrelas para celebrar um novo ciclo." },
 };
 const AppearanceContext = createContext<{ theme: Theme; apply: (theme: Theme) => void } | null>(null);

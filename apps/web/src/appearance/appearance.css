@@ -1,4 +1,4 @@
-﻿:root[data-theme="christmas"] {
+:root[data-theme="christmas"] {
   --color-background: #faf7f2;
   --color-primary: #a82c35;
   --color-primary-hover: #86222a;
@@ -51,3 +51,76 @@
 .theme-option-title small { margin-left: auto; color: var(--color-text-muted); }
 .appearance-option > span:last-child { color: var(--color-text-muted); font-size: var(--font-size-sm); }
 @media (max-width: 800px) { .appearance-options { grid-template-columns: 1fr; } }
+
+/* Christmas campaign: static decoration keeps scrolling light on mobile. */
+:root[data-theme="christmas"] {
+  --color-background: #fff9f0;
+  --color-header-border: #d8b36b;
+  --color-brand-surface: #e4efe6;
+  --color-brand-border: #b6cfbd;
+  --color-primary: #ad2032;
+  --color-primary-hover: #881929;
+  --color-link: #991d2e;
+  --color-selected-surface: #fbe4e6;
+}
+:root[data-theme="christmas"] body {
+  background-image: radial-gradient(ellipse at top left, #efe2c780, transparent 55%);
+}
+:root[data-theme="christmas"] .seasonal-banner {
+  background: #153e30;
+  color: #fff4d9;
+  border-bottom: 3px solid #d8b36b;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+:root[data-theme="christmas"] .site-header { border-top: 3px solid #ad2032; }
+:root[data-theme="christmas"] .catalog-product { border-color: #e3d4bd; }
+:root[data-theme="christmas"] .catalog-product-copy del { color: #6a6460; }
+:root[data-theme="christmas"] .theme-preview-christmas { background: #153e30; color: #fff1ce; }
+.christmas-campaign { margin: 32px 0; }
+.christmas-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(220px, 1fr);
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid #d8b36b;
+  background: radial-gradient(ellipse at 90% 20%, #d3454b66, transparent 60%), #8e1c2b;
+  color: #fff9ed;
+}
+.christmas-hero-copy { position: relative; z-index: 1; padding: clamp(24px, 4vw, 52px); }
+.christmas-kicker { display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: 700; letter-spacing: .14em; color: #f7d68f; margin: 0 0 22px; }
+.christmas-hero h1 { color: #fff9ed; font-size: clamp(28px, 3.1vw, 44px); line-height: 1.15; letter-spacing: -.035em; margin: 0 0 20px; }
+.christmas-hero h1 em { font-style: normal; color: #f7d68f; }
+.christmas-hero-copy > p:not(.christmas-kicker):not(.christmas-note) { max-width: 540px; line-height: 1.7; color: #fbe4df; }
+.christmas-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-top: 26px; }
+.christmas-actions .christmas-cta { background: #f7d68f; color: #492015; border: 1px solid #f7d68f; gap: 20px; border-radius: 999px; min-height: 46px; font-weight: 700; }
+.christmas-actions .christmas-cta:hover { background: #ffe9b9; }
+.christmas-actions a:focus-visible { outline: 3px solid #fff4df; outline-offset: 5px; }
+.christmas-note { font-size: 12px; color: #efd1cc; margin: 22px 0 0; }
+.christmas-art { position: relative; min-height: 350px; background: radial-gradient(circle at 50% 55%, #e9bd4d26, transparent 65%); }
+.christmas-art::before { content: ""; position: absolute; width: 270px; height: 270px; border: 1px solid #f7d68f55; border-radius: 50%; top: 15%; left: 5%; }
+.christmas-art-star { position: absolute; color: #f7d68f; top: 12%; left: 50%; font-size: 60px; }
+.christmas-art-spark { position: absolute; color: #fff4df; top: 35%; left: 12%; font-size: 30px; }
+.christmas-ornament { position: absolute; width: 64px; height: 64px; border-radius: 50%; background: #f7d68f; right: 15%; top: -20px; box-shadow: inset -12px -6px 0 #d4a84b; }
+.christmas-ornament::before { content: ""; position: absolute; width: 1px; height: 40px; background: #f7d68f; top: -40px; left: 32px; }
+.christmas-gift { display: block; position: absolute; border-radius: 6px; box-shadow: 0 16px 24px #410d2933; }
+.christmas-gift::before { content: ""; position: absolute; width: 16%; height: 100%; top: 0; left: 42%; background: #f7d68f; }
+.christmas-gift::after { content: ""; position: absolute; height: 18%; width: 110%; left: -5%; top: 10%; background: inherit; border-bottom: 5px solid #00000015; border-radius: 4px; }
+.christmas-gift-back { width: 126px; height: 150px; left: 40%; top: 33%; background: #245a40; transform: rotate(9deg); border-top: 12px solid #f7d68f; }
+.christmas-gift-front { width: 150px; height: 116px; left: 8%; top: 51%; background: #f7d68f; transform: rotate(-8deg); border-top: 10px solid #fff0c2; }
+.christmas-gift-front::before { background: #ad2032; }
+.christmas-art-label { position: absolute; left: 15%; bottom: 6%; color: #f7d68f; font-size: 10px; letter-spacing: .16em; }
+.christmas-art-label strong { font-size: 24px; color: #fff4df; letter-spacing: -.02em; }
+.christmas-budget { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 20px 24px; color: #fff5df; background: #153e30; border-radius: 0 0 16px 16px; margin: -10px 12px 0; position: relative; }
+.christmas-budget strong { font-size: 14px; }
+.christmas-budget > div { display: flex; gap: 8px; flex-wrap: wrap; }
+.christmas-budget a { color: #fff5df; border: 1px solid #91ac96; border-radius: 999px; padding: 10px 16px; font-size: 13px; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; }
+.christmas-budget a:hover { background: #2c5745; }
+#catalog-products { scroll-margin-top: 145px; }
+@media (max-width: 760px) {
+  .christmas-hero { grid-template-columns: minmax(0, 1fr); }
+  .christmas-art { display: none; }
+  .christmas-budget { padding: 20px 16px; margin-inline: 6px; }
+  .christmas-budget a { padding-inline: 12px; }
+}
