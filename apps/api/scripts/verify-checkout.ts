@@ -24,8 +24,8 @@ try {
   const db=client as unknown as Database;
   step="migration history";
   const history=await client.query<{name:string}>("SELECT name FROM appsoft_internal.migrations ORDER BY name");
-  for(const name of ["005_product_management.sql","006_checkout_shipping.sql"]) assert.ok(history.rows.some(row=>row.name===name));
-  checks.push("migrations 005 and 006 present");
+  for(const name of ["005_product_management.sql","006_checkout_shipping.sql","009_asaas_checkout.sql"]) assert.ok(history.rows.some(row=>row.name===name), `Missing migration: ${name}`);
+  checks.push("migrations 005, 006 and 009 present");
   const owner={id:randomUUID(),name:"Verificação temporária",email:`owner-${runId}@example.invalid`};
   const other={id:randomUUID(),name:"Outra conta temporária",email:`other-${runId}@example.invalid`};
   const buyer={id:randomUUID(),name:"Comprador temporário",email:`buyer-${runId}@example.invalid`};

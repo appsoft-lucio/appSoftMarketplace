@@ -5,6 +5,7 @@ import { getPool } from "./database.ts";
 import type { Database } from "./stores/repository.ts";
 import { productService } from "./products/service.ts";
 import { checkoutService } from "./checkout/service.ts";
+import { asaasEnabled, authenticateAsaasWebhook, receiveAsaasEvent, startAsaasCheckout } from "./checkout/asaas.ts";
 import { parseCheckout, parseShipping } from "@appsoft/domain/checkout";
 import { productUuid, validateProduct } from "@appsoft/domain/products";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -53,6 +54,19 @@ export function createApp(dependencies: Dependencies = { verifyUser, stores: sto
     try {
       const url = new URL(request.url || "/", "http://localhost");
       const path = url.pathname;
+      if (request.method === "POST" && path === "/api/webhooks/asaas") {
+        authenticateAsaasWebhook(request.headers["asaas-access-token"]);
+        await receiveAsaasEvent(await readBody(request, 32768));
+        json(response, 200, { received: true }); return;
+      }
+      const payment = path.match(/^\/api\/checkouts\/([^/]+)\/asaas$/);
+      if (request.method === "POST" && payment) {
+        const token = request.headers.authorization?.match(/^Bearer ([^\s]+)$/i)?.[1];
+        if (!token) throw new HttpError(401, "Entre na sua conta para continuar.");
+        const user = await dependencies.verifyUser(token);
+        if (!productUuid.test(payment[1])) throw new HttpError(400, "Identificador inválido.");
+        json(response, 200, await startAsaasCheckout(user, payment[1])); return;
+      }
       if (request.method === "GET" && path === "/api/health") {
         json(response, 200, { status: "ok", service: "appsoft-api", database: process.env.DATABASE_URL ? "configured" : "not-configured" }); return;
       }
@@ -146,7 +160,7 @@ export function createApp(dependencies: Dependencies = { verifyUser, stores: sto
         const token=request.headers.authorization?.match(/^Bearer ([^\s]+)$/i)?.[1];
         if (!token) throw new HttpError(401,"Entre na sua conta para continuar.");
         const user=await dependencies.verifyUser(token); const service=dependencies.checkout || checkoutService;
-        if (path==="/api/orders") { json(response,200,{orders:await service.orders(user)}); return; }
+        if (path==="/api/orders") { json(response,200,{orders:await service.orders(user),asaasSandbox:asaasEnabled()}); return; }
         if (cancelMatch) { await service.cancel(user,cancelMatch[1]); json(response,200,{cancelled:true}); return; }
         if (storeShipping) {
           if (storeShipping[2]==="orders") { json(response,200,{orders:await service.storeOrders(user,storeShipping[1])}); return; }

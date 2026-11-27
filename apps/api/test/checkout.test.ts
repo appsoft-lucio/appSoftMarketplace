@@ -13,10 +13,11 @@ import { authorizeStore, saveProduct } from "../src/products/repository.ts";
 import { checkoutQuote, createCheckout, cancelCheckout, listOrders, releaseExpired, saveShipping, shippingSettings } from "../src/checkout/repository.ts";
 import { createApp } from "../src/app.ts";
 import type { checkoutService } from "../src/checkout/service.ts";
+import { applyAsaasEvent, startAsaasCheckout } from "../src/checkout/asaas.ts";
 
 test("checkout: frete por loja, reserva atômica, idempotência, cancelamento e expiração",async t=>{
   const db=new PGlite();t.after(()=>db.close());
-  for(const file of ["001_initial.sql","002_store_registration.sql","003_store_admin.sql","004_catalog_filters.sql","005_product_management.sql","006_checkout_shipping.sql"]){
+  for(const file of ["001_initial.sql","002_store_registration.sql","003_store_admin.sql","004_catalog_filters.sql","005_product_management.sql","006_checkout_shipping.sql","009_asaas_checkout.sql"]){
     await db.exec((await readFile(new URL(`../../../database/migrations/${file}`,import.meta.url),"utf8")).replace(/^\uFEFF/,""));
   }
   const adapter=db as unknown as Database;
@@ -102,4 +103,52 @@ test("checkout: frete por loja, reserva atômica, idempotência, cancelamento e 
   const response=await fetch(base+"/checkouts",{method:"POST",headers,body:JSON.stringify({...input,idempotencyKey:randomUUID(),quoteToken:fresh.quoteToken,total_cents:1})});
   assert.equal(response.status,201);const saved=await response.json();
   assert.equal(saved.orders.reduce((sum:number,o:{total_cents:number})=>sum+o.total_cents,0),fresh.total_cents);
+
+  const config = {
+    ASAAS_SANDBOX_API_KEY: "sandbox-test-key",
+    ASAAS_WEBHOOK_TOKEN: "checkout-test-token-with-at-least-32-characters",
+    ASAAS_RETURN_ORIGIN: "https://homologacao.example.test",
+  };
+  for (const [name, value] of Object.entries(config)) {
+    const previous = process.env[name];
+    process.env[name] = value;
+    t.after(() => {
+      if (previous === undefined) delete process.env[name];
+      else process.env[name] = previous;
+    });
+  }
+  assert.equal((await fetch(base+"/webhooks/asaas",{method:"POST",headers})).status,401);
+  const providerId = randomUUID();
+  const send = t.mock.fn<typeof fetch>(async (url, options) => {
+    assert.equal(url, "https://api-sandbox.asaas.com/v3/checkouts");
+    const payload = JSON.parse(String(options?.body));
+    assert.deepEqual(payload.billingTypes, ["PIX"]);
+    assert.equal(payload.externalReference, saved.checkout_id);
+    assert.equal(payload.items[0].value, fresh.total_cents / 100);
+    return Response.json({id: providerId});
+  });
+  await assert.rejects(startAsaasCheckout(outsider,saved.checkout_id,adapter,send), /não encontrada/);
+  const payment = await startAsaasCheckout(buyer,saved.checkout_id,adapter,send);
+  assert.equal(new URL(payment.url).hostname, "sandbox.asaas.com");
+  assert.deepEqual(await startAsaasCheckout(buyer,saved.checkout_id,adapter,send), payment);
+  assert.equal(send.mock.callCount(), 1);
+  await assert.rejects(transaction(connection=>cancelCheckout(connection,buyer.id,saved.checkout_id)), /Cancele no checkout/);
+  const event = {event:"CHECKOUT_PAID",checkout:{id:providerId}};
+  await transaction(connection=>applyAsaasEvent(connection,event));
+  await transaction(connection=>applyAsaasEvent(connection,event));
+  await transaction(connection=>applyAsaasEvent(connection,{...event,event:"CHECKOUT_EXPIRED"}));
+  assert.equal((await listOrders(adapter,buyer.id,undefined,saved.checkout_id)).every(order=>order.status==="processing"),true);
+  const history = await db.query("SELECT 1 FROM marketplace_v2.order_events WHERE status='processing'");
+  assert.equal(history.rows.length, saved.orders.length);
+
+  const remaining = await checkoutQuote(adapter, input);
+  const unpaid = await transaction(connection=>createCheckout(connection,buyer,input,randomUUID(),remaining.quoteToken));
+  const unpaidProviderId = randomUUID();
+  await startAsaasCheckout(buyer,unpaid.checkout_id,adapter,async()=>Response.json({id:unpaidProviderId}));
+  await transaction(connection=>applyAsaasEvent(connection,{event:"CHECKOUT_EXPIRED",checkout:{id:unpaidProviderId}}));
+  await releaseExpired(adapter);
+  await transaction(connection=>applyAsaasEvent(connection,{event:"CHECKOUT_PAID",checkout:{id:unpaidProviderId}}));
+  assert.equal((await listOrders(adapter,buyer.id,undefined,unpaid.checkout_id)).every(order=>order.status==="cancelled"),true);
+  const late = await db.query<{asaas_status:string}>("SELECT asaas_status FROM marketplace_v2.checkouts WHERE id=$1",[unpaid.checkout_id]);
+  assert.equal(late.rows[0].asaas_status,"review");
 });

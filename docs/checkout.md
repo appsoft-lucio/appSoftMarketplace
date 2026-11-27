@@ -1,7 +1,7 @@
 # Frete e preparação de pedidos
 
-O provedor de pagamentos ainda não foi escolhido. Esta etapa prepara pedidos e
-reserva estoque por 30 minutos, sem cobrar, marcar como pago ou enviar mensagens.
+Esta etapa prepara pedidos e reserva estoque por 30 minutos. O [Pix com Asaas](asaas.md)
+pode ser habilitado no ambiente de homologação.
 
 ## Lojista
 
@@ -84,7 +84,6 @@ A migração cria a configuração por loja, campos de reserva e a função de
 liberação. Não ativa frete, cria pedidos ou cobra clientes. Não foi aplicada
 automaticamente ao Supabase nesta entrega.
 
-Faltam provedor e fluxo de pagamento do marketplace, webhooks autenticados,
-confirmação de pagamento, falhas/reembolsos e expedição. Antes de compras pagas,
+Faltam o fluxo de produção, repasses aos lojistas, estornos e expedição. Antes de compras pagas,
 validar concorrência contra PostgreSQL real e decidir a abrangência operacional
 de entrega. Os testes atuais usam PGlite temporário, sem banco de produção.

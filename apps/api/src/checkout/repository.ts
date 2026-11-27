@@ -50,7 +50,7 @@ export async function checkoutQuote(db:Database,input:CheckoutInput):Promise<Che
   return {stores,subtotal_cents,shipping_cents,total_cents,canSubmit:stores.every(store=>!store.error),quoteToken:hash({input,stores})};
 }
 export async function listOrders(db:Database,subject:string,storeId?:string,checkoutId?:string):Promise<SavedOrder[]> {
-  return (await db.query<SavedOrder>(`SELECT o.*,s.name AS store_name,c.expires_at,
+  return (await db.query<SavedOrder>(`SELECT o.*,s.name AS store_name,c.expires_at,c.asaas_status,
     coalesce((SELECT jsonb_agg(jsonb_build_object('productId',i.product_id,'name',i.product_name,'size',i.variant_size,'quantity',i.quantity,'unit_price_cents',i.unit_price_cents) ORDER BY i.id)
     FROM marketplace_v2.order_items i WHERE i.order_id=o.id),'[]'::jsonb) AS items
     FROM marketplace_v2.store_orders o JOIN marketplace_v2.checkouts c ON c.id=o.checkout_id JOIN marketplace_v2.stores s ON s.id=o.store_id
@@ -90,7 +90,13 @@ export async function createCheckout(db:Database,user:Identity,input:CheckoutInp
   return {checkout_id:checkoutId,orders:await listOrders(db,user.id,undefined,checkoutId)};
 }
 export async function cancelCheckout(db:Database,subject:string,id:string) {
-  const result=await db.query(`UPDATE marketplace_v2.checkouts SET expires_at=clock_timestamp() WHERE id=$1 AND customer_id IN(SELECT id FROM marketplace_v2.users WHERE auth_subject=$2) RETURNING id`,[id,subject]);
-  if (!result.rows.length) throw new HttpError(404,"Compra não encontrada.");
+  const checkout = (await db.query<{ asaas_status: string | null }>(`
+    SELECT asaas_status FROM marketplace_v2.checkouts WHERE id=$1 AND customer_id IN
+      (SELECT id FROM marketplace_v2.users WHERE auth_subject=$2) FOR UPDATE`, [id,subject])).rows[0];
+  if (!checkout) throw new HttpError(404,"Compra não encontrada.");
+  if (checkout.asaas_status && checkout.asaas_status !== "closed") {
+    throw new HttpError(409,"Cancele no checkout Asaas ou aguarde o encerramento da reserva.");
+  }
+  await db.query("UPDATE marketplace_v2.checkouts SET expires_at=clock_timestamp() WHERE id=$1", [id]);
   await releaseExpired(db);
 }

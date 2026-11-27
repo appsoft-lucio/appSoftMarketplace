@@ -26,6 +26,7 @@ export interface SavedOrder {
   subtotal_cents:number; shipping_cents:number; total_cents:number; delivery_address:DeliveryAddress;
   shipping_name:string; estimated_days:number; shipping_notes:string; created_at:string; expires_at:string;
   items:CheckoutLine[];
+  asaas_status?: "creating" | "active" | "paid" | "closed" | "review" | null;
 }
 function record(raw:unknown): Record<string,unknown> {
   if (!raw || typeof raw !== "object" || Array.isArray(raw)) throw new Error("Dados inválidos.");
